@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
@@ -26,6 +27,9 @@ AStarfallCharacter::AStarfallCharacter()
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
+	OverheadWidget->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
