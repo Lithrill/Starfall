@@ -119,7 +119,25 @@ void AStarfallCharacter::Jump()
 
 void AStarfallCharacter::Equip()
 {
+	if (Combat)
+	{
+		if (HasAuthority())
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else
+		{
+			ServerEquipButtonPressed();
+		}
+	}
+}
 
+void AStarfallCharacter::ServerEquipButtonPressed_Implementation()
+{
+	if (Combat)
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
 }
 
 void AStarfallCharacter::SetOVerlappingWeapon(AWeapon* Weapon)
