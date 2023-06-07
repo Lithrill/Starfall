@@ -9,6 +9,9 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Starfall/Weapon/Weapon.h"
+#include "Starfall/StarfallComponents/CombatComponent.h"
 
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
@@ -30,6 +33,16 @@ AStarfallCharacter::AStarfallCharacter()
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
+
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	Combat->SetIsReplicated(true);
+}
+
+void AStarfallCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AStarfallCharacter, OverlappingWeapon, COND_OwnerOnly);
 }
 
 // Called when the game starts or when spawned
@@ -47,6 +60,35 @@ void AStarfallCharacter::BeginPlay()
 	}
 	
 }
+
+void AStarfallCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+// Called to bind functionality to input
+void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Move);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Look);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Jump);
+		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Equip);
+	}
+}
+
+void AStarfallCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if (Combat)
+	{
+		Combat->Character = this;
+	}
+}
+
 void AStarfallCharacter::Move(const FInputActionValue& Value)
 {
 	
@@ -74,23 +116,45 @@ void AStarfallCharacter::Jump()
 {
 	Super::Jump();
 }
-// Called every frame
-void AStarfallCharacter::Tick(float DeltaTime)
+
+void AStarfallCharacter::Equip()
 {
-	Super::Tick(DeltaTime);
 
 }
 
-// Called to bind functionality to input
-void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AStarfallCharacter::SetOVerlappingWeapon(AWeapon* Weapon)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	if (OverlappingWeapon)
 	{
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Move);
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Look);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Jump);
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+	
+	OverlappingWeapon = Weapon;
+
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
 	}
 }
+
+void AStarfallCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+	if (LastWeapon)
+	{
+		LastWeapon->ShowPickupWidget(false);
+	}
+}
+// Called every frame
+
+
+
+
+
 
