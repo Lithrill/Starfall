@@ -36,6 +36,8 @@ AStarfallCharacter::AStarfallCharacter()
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void AStarfallCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -77,6 +79,9 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Jump);
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Equip);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Crouch);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Aim);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AStarfallCharacter::AimEnd);
 	}
 }
 
@@ -132,6 +137,34 @@ void AStarfallCharacter::Equip()
 	}
 }
 
+void AStarfallCharacter::Crouch()
+{
+	if (bIsCrouched)
+	{
+		ACharacter::UnCrouch();
+	}
+	else
+	{
+		ACharacter::Crouch();
+	}
+}
+
+void AStarfallCharacter::Aim()
+{
+	if (Combat)
+	{
+		Combat->SetAiming(true);
+	}
+}
+
+void AStarfallCharacter::AimEnd()
+{
+	if (Combat)
+	{
+		Combat->SetAiming(false);
+	}
+}
+
 void AStarfallCharacter::ServerEquipButtonPressed_Implementation()
 {
 	if (Combat)
@@ -169,8 +202,16 @@ void AStarfallCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 		LastWeapon->ShowPickupWidget(false);
 	}
 }
-// Called every frame
 
+bool AStarfallCharacter::IsWeaponEquipped()
+{
+	return (Combat && Combat->EquippedWeapon);
+}
+
+bool AStarfallCharacter::IsAiming()
+{
+	return (Combat && Combat->bAiming);
+}
 
 
 

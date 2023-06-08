@@ -29,4 +29,10 @@ void UStarfallCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsInAir = StarfallCharacter->GetCharacterMovement()->IsFalling();
 
 	bIsAccelerating = StarfallCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
+
+	bWeaponEquipped = StarfallCharacter->IsWeaponEquipped();
+
+	bIsCrouched = StarfallCharacter->bIsCrouched;
+
+	bAiming = StarfallCharacter->IsAiming();
 }

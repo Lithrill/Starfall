@@ -44,10 +44,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* EquipAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* CrouchAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* AimAction;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Jump();
 	void Equip();
+	void Crouch();
+	void Aim();
+	void AimEnd();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -74,4 +83,6 @@ private:
 public:	
 	void SetOVerlappingWeapon(AWeapon* Weapon);
 
+	bool IsWeaponEquipped();
+	bool IsAiming();
 };
