@@ -12,6 +12,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Starfall/Weapon/Weapon.h"
 #include "Starfall/StarfallComponents/CombatComponent.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
@@ -38,6 +39,8 @@ AStarfallCharacter::AStarfallCharacter()
 	Combat->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 }
 
 void AStarfallCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
