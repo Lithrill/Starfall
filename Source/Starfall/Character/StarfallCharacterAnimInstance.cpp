@@ -4,6 +4,8 @@
 #include "StarfallCharacterAnimInstance.h"
 #include "StarfallCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+
 
 void UStarfallCharacterAnimInstance::NativeInitializeAnimation()
 {
@@ -35,4 +37,11 @@ void UStarfallCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsCrouched = StarfallCharacter->bIsCrouched;
 
 	bAiming = StarfallCharacter->IsAiming();
+
+	//Offset Yaw for Strafing
+	FRotator AimRotation = StarfallCharacter->GetBaseAimRotation();
+	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(StarfallCharacter->GetVelocity());
+	FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
+	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 5.f);
+	YawOffset = DeltaRotation.Yaw;
 }
