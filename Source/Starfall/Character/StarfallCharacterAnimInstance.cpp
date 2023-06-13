@@ -44,4 +44,7 @@ void UStarfallCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
 	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 5.f);
 	YawOffset = DeltaRotation.Yaw;
+
+	AO_Yaw = StarfallCharacter->GetAO_Yaw();
+	AO_Pitch = StarfallCharacter->GetAO_Pitch();
 }
