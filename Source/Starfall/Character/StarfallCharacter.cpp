@@ -14,6 +14,7 @@
 #include "Starfall/StarfallComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "StarfallCharacterAnimInstance.h"
 
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
@@ -23,7 +24,7 @@ AStarfallCharacter::AStarfallCharacter()
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
-	CameraBoom->TargetArmLength = 600.0f;
+	CameraBoom->TargetArmLength = 300.0f;
 	CameraBoom->bUsePawnControlRotation = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -42,6 +43,7 @@ AStarfallCharacter::AStarfallCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	NetUpdateFrequency = 66.f;
@@ -92,6 +94,8 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Crouch);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Aim);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AStarfallCharacter::AimEnd);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::FirePressed);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AStarfallCharacter::FireReleased);
 	}
 }
 
@@ -101,6 +105,20 @@ void AStarfallCharacter::PostInitializeComponents()
 	if (Combat)
 	{
 		Combat->Character = this;
+	}
+}
+
+void AStarfallCharacter::PlayFireMontage(bool bAiming)
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && FireWeaponMontage)
+	{
+		AnimInstance->Montage_Play(FireWeaponMontage);
+		FName SectionName;
+		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
 
@@ -129,7 +147,14 @@ void AStarfallCharacter::Look(const FInputActionValue& Value)
 }
 void AStarfallCharacter::Jump()
 {
-	Super::Jump();
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Super::Jump();
+	}
 }
 
 void AStarfallCharacter::Equip()
@@ -175,6 +200,23 @@ void AStarfallCharacter::AimEnd()
 	}
 }
 
+void AStarfallCharacter::FirePressed()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(true);
+	}
+}
+
+void AStarfallCharacter::FireReleased()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(false);
+	}
+}
+
+
 void AStarfallCharacter::AimOffset(float DeltaTime)
 {
 	if (Combat && Combat->EquippedWeapon == nullptr) return;
@@ -213,6 +255,10 @@ void AStarfallCharacter::AimOffset(float DeltaTime)
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
 	}
 }
+
+
+
+
 
 void AStarfallCharacter::TurnInPlace(float DeltaTime)
 {
