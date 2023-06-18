@@ -46,8 +46,8 @@ AStarfallCharacter::AStarfallCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
-	NetUpdateFrequency = 100.f;
-	MinNetUpdateFrequency = 33.f;
+	NetUpdateFrequency = 125.f;
+	MinNetUpdateFrequency = 100.f;
 }
 
 void AStarfallCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
