@@ -46,7 +46,7 @@ AStarfallCharacter::AStarfallCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
-	NetUpdateFrequency = 66.f;
+	NetUpdateFrequency = 100.f;
 	MinNetUpdateFrequency = 33.f;
 }
 
