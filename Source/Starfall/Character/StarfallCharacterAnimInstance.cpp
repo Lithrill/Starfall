@@ -62,5 +62,7 @@ void UStarfallCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("hand_r"), ERelativeTransformSpace::RTS_World);
 			RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - StarfallCharacter->GetHitTarget()));
 		}
+
+		
 	}
 }
