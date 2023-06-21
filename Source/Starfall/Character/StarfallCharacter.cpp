@@ -338,6 +338,12 @@ AWeapon* AStarfallCharacter::GetEquippedWeapon()
 	return Combat->EquippedWeapon;
 }
 
+FVector AStarfallCharacter::GetHitTarget() const
+{
+	if (Combat == nullptr) return FVector();
+	return Combat->HitTarget;
+}
+
 
 
 

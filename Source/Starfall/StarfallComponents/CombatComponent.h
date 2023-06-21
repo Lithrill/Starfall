@@ -44,8 +44,11 @@ protected:
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
+	void SetHUDCrosshairs(float DeltaTime);
 private:
 	class AStarfallCharacter* Character;
+	class AStarfallPlayerController* Controller;
+	class AStarfallHUD* HUD;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
@@ -60,6 +63,16 @@ private:
 	float AimWalkSpeed;
 
 	bool bFireButtonPressed;
+
+	/*
+	*HUD and crosshairs
+	*/
+
+
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
+
+	FVector HitTarget;
 
 public:	
 	
