@@ -74,10 +74,11 @@ void AStarfallCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	StarfallPlayerController = Cast<AStarfallPlayerController>(Controller);
-	if (StarfallPlayerController)
+	UpdateHUDHealth();
+
+	if (HasAuthority())
 	{
-		StarfallPlayerController->SetHUDHealth(Health, MaxHealth);
+		OnTakeAnyDamage.AddDynamic(this, &AStarfallCharacter::ReceiveDamage);
 	}
 	
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
@@ -164,6 +165,13 @@ void AStarfallCharacter::PlayHitReactMontage()
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+void AStarfallCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
 }
 
 void AStarfallCharacter::Move(const FInputActionValue& Value)
@@ -345,10 +353,6 @@ void AStarfallCharacter::SimProxiesTurn()
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 }
 
-
-
-
-
 void AStarfallCharacter::TurnInPlace(float DeltaTime)
 {
 	if (AO_Yaw > 90.f)
@@ -379,13 +383,6 @@ void AStarfallCharacter::ServerEquipButtonPressed_Implementation()
 	}
 }
 
-
-
-void AStarfallCharacter::MulticastHit_Implementation()
-{
-	PlayHitReactMontage();
-}
-
 void AStarfallCharacter::HideCameraIfCharacterClose()
 {
 	if (!IsLocallyControlled()) return;
@@ -409,7 +406,17 @@ void AStarfallCharacter::HideCameraIfCharacterClose()
 
 void AStarfallCharacter::OnRep_Health()
 {
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
 
+void AStarfallCharacter::UpdateHUDHealth()
+{
+	StarfallPlayerController = StarfallPlayerController == nullptr ? Cast<AStarfallPlayerController>(Controller) : StarfallPlayerController;
+	if (StarfallPlayerController)
+	{
+		StarfallPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
 
 void AStarfallCharacter::SetOVerlappingWeapon(AWeapon* Weapon)
