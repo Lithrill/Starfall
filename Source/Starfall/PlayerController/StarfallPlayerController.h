@@ -13,5 +13,15 @@ UCLASS()
 class STARFALL_API AStarfallPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+
+public:
+
+	void SetHUDHealth(float Health, float MaxHealth);
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	class AStarfallHUD* StarfallHUD;
 	
 };

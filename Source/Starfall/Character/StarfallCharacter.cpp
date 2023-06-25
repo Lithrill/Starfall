@@ -16,6 +16,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "StarfallCharacterAnimInstance.h"
 #include "Starfall/Starfall.h"
+#include "Starfall/PlayerController/StarfallPlayerController.h"
 
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
@@ -58,6 +59,7 @@ void AStarfallCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(AStarfallCharacter, OverlappingWeapon, COND_OwnerOnly);
+	DOREPLIFETIME(AStarfallCharacter, Health);
 }
 
 void AStarfallCharacter::OnRep_ReplicatedMovement()
@@ -72,6 +74,11 @@ void AStarfallCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	StarfallPlayerController = Cast<AStarfallPlayerController>(Controller);
+	if (StarfallPlayerController)
+	{
+		StarfallPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 	
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -398,6 +405,11 @@ void AStarfallCharacter::HideCameraIfCharacterClose()
 			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		}
 	}
+}
+
+void AStarfallCharacter::OnRep_Health()
+{
+
 }
 
 void AStarfallCharacter::SetOVerlappingWeapon(AWeapon* Weapon)

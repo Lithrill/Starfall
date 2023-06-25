@@ -2,4 +2,31 @@
 
 
 #include "StarfallPlayerController.h"
+#include "Starfall/HUD/StarfallHUD.h"
+#include "Starfall/HUD/CharacterOverlay.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 
+void AStarfallPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	StarfallHUD = Cast<AStarfallHUD>(GetHUD());
+}
+
+void AStarfallPlayerController::SetHUDHealth(float Health, float MaxHealth)
+{
+	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
+
+	bool bHUDValid = StarfallHUD && 
+		StarfallHUD->CharacterOverlay && 
+		StarfallHUD->CharacterOverlay->HealthBar && 
+		StarfallHUD->CharacterOverlay->HealthText;
+	if (bHUDValid)
+	{
+		const float HealthPercent = Health / MaxHealth;
+		StarfallHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
+		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
+		StarfallHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
+	}
+}
