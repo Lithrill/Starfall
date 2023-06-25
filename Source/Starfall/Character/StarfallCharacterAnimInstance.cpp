@@ -36,6 +36,7 @@ void UStarfallCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsCrouched = StarfallCharacter->bIsCrouched;
 	bAiming = StarfallCharacter->IsAiming();
 	TurningInPlace = StarfallCharacter->GetTurningInPlace();
+	bRotateRootBone = StarfallCharacter->ShouldRotateRootBone();
 
 	//Offset Yaw for Strafing
 	FRotator AimRotation = StarfallCharacter->GetBaseAimRotation();
@@ -60,7 +61,8 @@ void UStarfallCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		{
 			bLocallyControlled = true;
 			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("hand_r"), ERelativeTransformSpace::RTS_World);
-			RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - StarfallCharacter->GetHitTarget()));
+			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - StarfallCharacter->GetHitTarget()));
+			RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 30.f);
 		}
 
 		

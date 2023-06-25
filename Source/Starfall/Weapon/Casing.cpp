@@ -19,7 +19,7 @@ ACasing::ACasing()
 	CasingMesh->SetEnableGravity(true);
 	CasingMesh->SetNotifyRigidBodyCollision(true);
 	ShellEjectionImpulse = 5.f;
-	SoundOnce = true;
+	
 }
 
 
@@ -33,27 +33,16 @@ void ACasing::BeginPlay()
 
 void ACasing::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (ShellSound && SoundOnce)
+	if (ShellSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ShellSound, GetActorLocation());
-		SoundOnce = false;
 	}
 
-	// Set the delay time in seconds
-	float DelayTime = 5.0f;
-
-	// Create a timer handle
-	FTimerHandle TimerHandle;
-
-	// Bind the timer delegate to your function
-	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACasing::ShellTimer);
+	Destroy();
 	
 }
 
-void ACasing::ShellTimer()
-{
-	Destroy();
-}
+
 
 
 
