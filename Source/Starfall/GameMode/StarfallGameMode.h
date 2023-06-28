@@ -16,4 +16,5 @@ class STARFALL_API AStarfallGameMode : public AGameMode
 	
 public:
 	virtual void PlayerEliminated(class AStarfallCharacter* ElimmedCharacter, class AStarfallPlayerController* VictimController, class AStarfallPlayerController* AttackerController);
+	virtual void RequestRespawn(class ACharacter* ElimmedCharacter, AController* ElimmedController);
 };

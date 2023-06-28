@@ -18,13 +18,17 @@
 #include "Starfall/Starfall.h"
 #include "Starfall/PlayerController/StarfallPlayerController.h"
 #include "Starfall/GameMode/StarfallGameMode.h"
+#include "Math/RandomStream.h"
+#include "TimerManager.h"
+
+
 
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->TargetArmLength = 400.0f;
@@ -53,6 +57,8 @@ AStarfallCharacter::AStarfallCharacter()
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	NetUpdateFrequency = 125.f;
 	MinNetUpdateFrequency = 100.f;
+
+	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
 }
 
 void AStarfallCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -72,7 +78,39 @@ void AStarfallCharacter::OnRep_ReplicatedMovement()
 
 void AStarfallCharacter::Elim()
 {
+	MulticastElim();
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&AStarfallCharacter::ElimTimerFinished,
+		ElimDelay
+	);
+}
 
+void AStarfallCharacter::MulticastElim_Implementation()
+{
+	bElimmed = true;
+	PlayElimMontage();
+
+	if (DissolveMaterialInstance)
+	{
+		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
+
+		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance);
+		GetMesh()->SetMaterial(1, DynamicDissolveMaterialInstance);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
+	}
+	StartDissolve();
+}
+
+void AStarfallCharacter::ElimTimerFinished()
+{
+	AStarfallGameMode* StarfallGameMode = GetWorld()->GetAuthGameMode<AStarfallGameMode>();
+	if (StarfallGameMode)
+	{
+		StarfallGameMode->RequestRespawn(this, Controller);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -157,6 +195,39 @@ void AStarfallCharacter::PlayFireMontage(bool bAiming)
 		FName SectionName;
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void AStarfallCharacter::PlayElimMontage()
+{
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMontage)
+	{
+		AnimInstance->Montage_Play(ElimMontage);
+
+		// Generate a random index for selecting a section
+		FRandomStream RandomStream;
+		RandomStream.GenerateNewSeed();
+
+		// Get the section names of the "elimslot" slot
+		TArray<FName> SectionNames = { FName("Death"), FName("Death2"), FName("Death3"), 
+			FName("Death4"), FName("Death5"), FName("Death6"), 
+			FName("Death7"), FName("Death8"), FName("Death9"), 
+			FName("Death10"), FName("Death11"), FName("Death12"), 
+			FName("Death13"), FName("Death14"), FName("Death15") 
+		};
+
+		if (SectionNames.Num() > 0)
+		{
+			int32 RandomIndex = RandomStream.RandRange(0, SectionNames.Num() - 1);
+
+			// Get the random section name
+			FName RandomSectionName = SectionNames[RandomIndex];
+
+			// Jump to the random section
+			AnimInstance->Montage_JumpToSection(RandomSectionName);
+		}
 	}
 }
 
@@ -433,6 +504,27 @@ void AStarfallCharacter::UpdateHUDHealth()
 	if (StarfallPlayerController)
 	{
 		StarfallPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+
+
+void AStarfallCharacter::UpdateDissolveMaterial(float DissolveValue)
+{
+	if (DynamicDissolveMaterialInstance)
+	{
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+
+	}
+}
+
+void AStarfallCharacter::StartDissolve()
+{
+	DissolveTrack.BindDynamic(this, &AStarfallCharacter::UpdateDissolveMaterial);
+	if (DissolveCurve && DissolveTimeline)
+	{
+		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
+		DissolveTimeline->Play();
 	}
 }
 

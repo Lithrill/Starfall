@@ -37,6 +37,7 @@ void UStarfallCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bAiming = StarfallCharacter->IsAiming();
 	TurningInPlace = StarfallCharacter->GetTurningInPlace();
 	bRotateRootBone = StarfallCharacter->ShouldRotateRootBone();
+	bElimmed = StarfallCharacter->IsElimmed();
 
 	//Offset Yaw for Strafing
 	FRotator AimRotation = StarfallCharacter->GetBaseAimRotation();
