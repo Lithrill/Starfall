@@ -17,6 +17,7 @@
 #include "StarfallCharacterAnimInstance.h"
 #include "Starfall/Starfall.h"
 #include "Starfall/PlayerController/StarfallPlayerController.h"
+#include "Starfall/GameMode/StarfallGameMode.h"
 
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
@@ -67,6 +68,11 @@ void AStarfallCharacter::OnRep_ReplicatedMovement()
 	Super::OnRep_ReplicatedMovement();
 	SimProxiesTurn();
 	TimeSinceLastMovementReplication = 0.f;
+}
+
+void AStarfallCharacter::Elim()
+{
+
 }
 
 // Called when the game starts or when spawned
@@ -172,6 +178,17 @@ void AStarfallCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	PlayHitReactMontage();
+
+	if (Health == 0.f)
+	{
+		AStarfallGameMode* StarfallGameMode = GetWorld()->GetAuthGameMode<AStarfallGameMode>();
+		if (StarfallGameMode)
+		{
+			StarfallPlayerController = StarfallPlayerController == nullptr ? Cast<AStarfallPlayerController>(Controller) : StarfallPlayerController;
+			AStarfallPlayerController* AttackerController = Cast<AStarfallPlayerController>(InstigatorController);
+			StarfallGameMode->PlayerEliminated(this, StarfallPlayerController, AttackerController);
+		}
+	}
 }
 
 void AStarfallCharacter::Move(const FInputActionValue& Value)

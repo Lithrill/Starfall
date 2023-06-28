@@ -40,7 +40,7 @@ private:
 	class UButton* HostButton;
 
 	UPROPERTY(meta = (BindWidget))
-	UButton* JoinButton;
+	class UButton* JoinButton;
 
 	UFUNCTION()
 	void HostButtonClicked();
@@ -48,6 +48,7 @@ private:
 	UFUNCTION()
 	void JoinButtonClicked();
 
+	
 	void MenuTearDown();
 
 	// The subsystem designed to handle all online session functionality
