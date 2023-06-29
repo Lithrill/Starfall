@@ -78,6 +78,10 @@ void AStarfallCharacter::OnRep_ReplicatedMovement()
 
 void AStarfallCharacter::Elim()
 {
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Dropped();
+	}
 	MulticastElim();
 	GetWorldTimerManager().SetTimer(
 		ElimTimer,
@@ -92,6 +96,8 @@ void AStarfallCharacter::MulticastElim_Implementation()
 	bElimmed = true;
 	PlayElimMontage();
 
+	// Start dissolve effect
+
 	if (DissolveMaterialInstance)
 	{
 		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
@@ -102,6 +108,18 @@ void AStarfallCharacter::MulticastElim_Implementation()
 		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
 	}
 	StartDissolve();
+
+	// Disable Character movemenet
+
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (StarfallPlayerController)
+	{
+		DisableInput(StarfallPlayerController);
+	}
+	// Disable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AStarfallCharacter::ElimTimerFinished()
