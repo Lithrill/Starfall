@@ -20,7 +20,8 @@
 #include "Starfall/GameMode/StarfallGameMode.h"
 #include "Math/RandomStream.h"
 #include "TimerManager.h"
-
+#include "Starfall/ElimAnimations/HumanElimAnimation.h"
+#include "Engine/World.h"
 
 
 // Sets default values
@@ -89,10 +90,14 @@ void AStarfallCharacter::Elim()
 		&AStarfallCharacter::ElimTimerFinished,
 		ElimDelay
 	);
+
 }
 
 void AStarfallCharacter::MulticastElim_Implementation()
 {
+	
+	
+
 	bElimmed = true;
 	PlayElimMontage();
 
@@ -120,6 +125,36 @@ void AStarfallCharacter::MulticastElim_Implementation()
 	// Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	//Spawn in ElimVehicleObject
+	if (ElimVehicleToSpawn)
+	{
+		UWorld* World = GetWorld();
+		if (World == nullptr)
+		{
+			return;
+		}
+
+		FActorSpawnParameters SpawnParams;
+		
+
+		FVector SpawnCustomProperties;
+
+		//SpawnCustomProperties.X = -1000.f;
+		//SpawnCustomProperties.Y = -6000.f;
+		SpawnCustomProperties.Z = 500.f;
+
+		FVector SpawnLocation = GetActorLocation()  + SpawnCustomProperties + (GetActorForwardVector() * -5000); // Offset from character forward direction
+		FRotator SpawnRotation = GetActorRotation();
+
+		
+		World->SpawnActor<AHumanElimAnimation>(ElimVehicleToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+
+		if (ElimVehicleToSpawn != nullptr)
+		{
+			// Do something with the new object
+		}
+	}
 }
 
 void AStarfallCharacter::ElimTimerFinished()

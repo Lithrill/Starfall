@@ -34,6 +34,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	TSubclassOf<class AHumanElimAnimation> ElimVehicleToSpawn;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -183,6 +186,11 @@ private:
 	//Material instance set on the Blueprint, used with the dynamic material instance
 	UPROPERTY(EditAnywhere, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance;
+
+	/*
+	* Elim bot
+	*/
+
 
 public:	
 	void SetOVerlappingWeapon(AWeapon* Weapon);
