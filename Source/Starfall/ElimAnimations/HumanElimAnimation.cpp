@@ -6,7 +6,7 @@
 #include "Math/Vector.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
-#include "TimerManager.h"
+
 
 // Sets default values
 AHumanElimAnimation::AHumanElimAnimation()
@@ -18,6 +18,11 @@ AHumanElimAnimation::AHumanElimAnimation()
 	SetRootComponent(ElimVehicleMesh);
 	
 	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
+}
+
+void AHumanElimAnimation::TimerObjectDestroy()
+{
+	Destroy();
 }
 
 
@@ -46,6 +51,12 @@ void AHumanElimAnimation::BeginPlay()
 		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
 	}
 	StartDissolve();
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+	GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &AHumanElimAnimation::TimerObjectDestroy, 3.f, false, 3.f);
 }
 
 void AHumanElimAnimation::FlightDirection(float DeltaTime)
@@ -59,13 +70,10 @@ void AHumanElimAnimation::FlightDirection(float DeltaTime)
 	
 }
 
-void AHumanElimAnimation::MulticastHuamanElim_Implementation()
-{
-	
-
-
-	
-}
+//void AHumanElimAnimation::MulticastHuamanElim_Implementation()
+//{
+//
+//}
 
 void AHumanElimAnimation::UpdateDissolveMaterial(float DissolveValue)
 {
@@ -94,7 +102,7 @@ void AHumanElimAnimation::Tick(float DeltaTime)
 	{
 	float DeltaTime = GetWorld()->GetDeltaSeconds();
 	FlightDirection(DeltaTime);
-	MulticastHuamanElim_Implementation();
+	//MulticastHuamanElim_Implementation();
 	}
 }
 

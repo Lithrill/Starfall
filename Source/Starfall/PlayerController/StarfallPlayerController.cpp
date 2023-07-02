@@ -6,12 +6,24 @@
 #include "Starfall/HUD/CharacterOverlay.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Starfall/Character/StarfallCharacter.h"
 
 void AStarfallPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
 	StarfallHUD = Cast<AStarfallHUD>(GetHUD());
+}
+
+void AStarfallPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(InPawn);
+	if (StarfallCharacter)
+	{
+		SetHUDHealth(StarfallCharacter->GetHealth(), StarfallCharacter->GetMaxHealth());
+	}
 }
 
 void AStarfallPlayerController::SetHUDHealth(float Health, float MaxHealth)
@@ -30,3 +42,5 @@ void AStarfallPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		StarfallHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
 }
+
+

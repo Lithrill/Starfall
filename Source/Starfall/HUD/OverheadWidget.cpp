@@ -44,7 +44,7 @@ void UOverheadWidget::ShowPlayerName(APawn* InPawn)
 		FTimerHandle GetPlayerStateTimer;
 		FTimerDelegate TryAgainDelegate;
 		TryAgainDelegate.BindUFunction(this, FName("ShowPlayerName"), InPawn);
-		GetWorld()->GetTimerManager().SetTimer(GetPlayerStateTimer, TryAgainDelegate, GetPlayerNameInterval, false, 0.1f);
+		GetWorld()->GetTimerManager().SetTimer(GetPlayerStateTimer, TryAgainDelegate, GetPlayerNameInterval, false, 0.f);
 		TotalTime += GetPlayerNameInterval;
 		return;
 	}

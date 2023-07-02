@@ -22,6 +22,7 @@
 #include "TimerManager.h"
 #include "Starfall/ElimAnimations/HumanElimAnimation.h"
 #include "Engine/World.h"
+#include "Starfall/HUD/ScoreHUD.h"
 
 
 // Sets default values
@@ -60,6 +61,8 @@ AStarfallCharacter::AStarfallCharacter()
 	MinNetUpdateFrequency = 100.f;
 
 	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
+
+	
 }
 
 void AStarfallCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -225,6 +228,8 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AStarfallCharacter::AimEnd);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::FirePressed);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AStarfallCharacter::FireReleased);
+		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::ScorePressed);
+		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Completed, this, &AStarfallCharacter::ScoreReleased);
 	}
 }
 
@@ -399,6 +404,39 @@ void AStarfallCharacter::FirePressed()
 	{
 		Combat->FireButtonPressed(true);
 	}
+}
+
+void AStarfallCharacter::ScorePressed()
+{
+	if (!WasScorePressed)
+	{
+		
+		APlayerController* PlayerController = IsValid(this) ? Cast<APlayerController>(this->GetController()) : nullptr;
+
+		if (PlayerController && CharacterScoreClass)
+		{
+			ScoreHUD = CreateWidget<UScoreHUD>(PlayerController, CharacterScoreClass);
+			ScoreHUD->AddToViewport();
+		}
+
+
+		//UScoreHUD* TheScoreHUDWidget = NewObject<UScoreHUD>(this);
+		//if (TheScoreHUDWidget)
+		//{
+		//	TheScoreHUDWidget->AddToViewport();
+		//	//TheScoreHUDWidget->AddCharacterScoreWidget();
+		//}
+		WasScorePressed = true;
+	}
+}
+
+void AStarfallCharacter::ScoreReleased()
+{
+	if (ScoreHUD)
+	{
+		ScoreHUD->NativeDestruct();
+	}
+	WasScorePressed = false;
 }
 
 void AStarfallCharacter::FireReleased()

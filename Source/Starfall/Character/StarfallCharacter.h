@@ -13,6 +13,7 @@
 class UInputMappingContext;
 class UInputAction;
 
+
 UCLASS()
 class STARFALL_API AStarfallCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
@@ -37,10 +38,21 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	TSubclassOf<class AHumanElimAnimation> ElimVehicleToSpawn;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UScoreHUD> ScoreHUDWidget;
+
+	//UPROPERTY(EditAnywhere, Category = "Character HUD")
+	//TSubclassOf<class UUserWidget> CharacterScoreHUDClass;
+
+	bool WasScorePressed = false;
+	class UScoreHUD* ScoreHUD;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<class UUserWidget> CharacterScoreClass;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* StarfallCharacterMappingContext;
@@ -65,6 +77,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* FireAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* ScoreAction;
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -78,6 +93,9 @@ protected:
 	void SimProxiesTurn();
 	void FirePressed();
 	void FireReleased();
+	void ScorePressed();
+	void ScoreReleased();
+	
 	
 
 	void PlayHitReactMontage();
@@ -96,6 +114,8 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
+
+	
 
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	class AWeapon* OverlappingWeapon;
@@ -154,6 +174,8 @@ private:
 
 	class AStarfallPlayerController* StarfallPlayerController;
 
+	
+
 	bool bElimmed = false;
 
 	FTimerHandle ElimTimer;
@@ -205,4 +227,6 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 };

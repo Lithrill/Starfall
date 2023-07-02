@@ -30,7 +30,7 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Overhead Widget Properties", meta = (AllowPrivateAccess = true, Units = "Seconds"))
-	float GetPlayerNameTimeout = 30.0f;
+	float GetPlayerNameTimeout = 5.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Overhead Widget Properties", meta = (AllowPrivateAccess = true, Units = "Seconds"))
 	float GetPlayerNameInterval = 0.1f;

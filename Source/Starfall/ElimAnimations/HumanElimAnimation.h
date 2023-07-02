@@ -16,8 +16,9 @@ public:
 	// Sets default values for this actor's properties
 	AHumanElimAnimation();
 
+	void TimerObjectDestroy();
 	
-	
+	FTimerHandle DestroyTimerHandle;
 
 protected:
 	// Called when the game starts or when spawned
@@ -29,7 +30,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = MoveActor)
 	float Speed;
 
-	
+
 
 private:
 
@@ -37,8 +38,8 @@ private:
 	void FlightDirection(float DeltaTime);
 
 	
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastHuamanElim();
+	/*UFUNCTION(NetMulticast, Reliable)
+	void MulticastHuamanElim();*/
 
 	FTimerHandle ElimVehicleTimer;
 
