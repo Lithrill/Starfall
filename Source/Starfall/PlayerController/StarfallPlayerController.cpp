@@ -46,14 +46,17 @@ void AStarfallPlayerController::SetHUDHealth(float Health, float MaxHealth)
 
 void AStarfallPlayerController::SetHUDScore(float Score)
 {
+	UE_LOG(LogTemp, Error, TEXT("Stage 0"));
 	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
 	bool bHUDValid = StarfallHUD &&
 		StarfallHUD->ScoreHUD &&
 		StarfallHUD->ScoreHUD->ScoreAmount;
+	UE_LOG(LogTemp, Error, TEXT("Stage 1"));
 	if (bHUDValid)
 	{
 		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
 		StarfallHUD->ScoreHUD->ScoreAmount->SetText(FText::FromString(ScoreText));
+		UE_LOG(LogTemp, Error, TEXT("Stage 2"));
 	}
 		
 }

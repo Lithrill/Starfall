@@ -6,9 +6,19 @@
 #include "Starfall/PlayerController/StarfallPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
+#include "Starfall/PlayerState/StarfallPlayerState.h"
 
 void AStarfallGameMode::PlayerEliminated(class AStarfallCharacter* ElimmedCharacter, class AStarfallPlayerController* VictimController, class AStarfallPlayerController* AttackerController)
 {
+	AStarfallPlayerState* AttackerPlayerState = AttackerController ? Cast<AStarfallPlayerState>(AttackerController->PlayerState) : nullptr;
+	AStarfallPlayerState* VictimPlayerState = VictimController ? Cast<AStarfallPlayerState>(VictimController->PlayerState) : nullptr;
+
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
+	{
+		AttackerPlayerState->AddToScore(1.f);
+	}
+
+
 	if (ElimmedCharacter)
 	{
 		ElimmedCharacter->Elim();

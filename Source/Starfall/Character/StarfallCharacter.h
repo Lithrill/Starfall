@@ -100,6 +100,8 @@ protected:
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
 
+	// Poll for any relevant classes and initialize our hud
+	void PollInit();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -210,7 +212,7 @@ private:
 	*/
 
 
-
+	class AStarfallPlayerState* StarfallPlayerState;
 public:	
 	void SetOVerlappingWeapon(AWeapon* Weapon);
 

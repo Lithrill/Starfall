@@ -24,6 +24,7 @@
 #include "Engine/World.h"
 #include "Starfall/HUD/ScoreHUD.h"
 #include "Starfall/HUD/StarfallHUD.h"
+#include "Starfall/PlayerState/StarfallPlayerState.h"
 
 
 
@@ -213,6 +214,7 @@ void AStarfallCharacter::Tick(float DeltaTime)
 	}
 
 	HideCameraIfCharacterClose();
+	PollInit();
 }
 
 // Called to bind functionality to input
@@ -603,6 +605,18 @@ void AStarfallCharacter::UpdateHUDHealth()
 	if (StarfallPlayerController)
 	{
 		StarfallPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void AStarfallCharacter::PollInit()
+{
+	if (StarfallPlayerState == nullptr)
+	{
+		StarfallPlayerState = GetPlayerState<AStarfallPlayerState>();
+		if (StarfallPlayerState)
+		{
+			StarfallPlayerState->AddToScore(0.f);
+		}
 	}
 }
 

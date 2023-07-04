@@ -4,6 +4,8 @@
 #include "StarfallPlayerState.h"
 #include "Starfall/Character/StarfallCharacter.h"
 #include "Starfall/PlayerController/StarfallPlayerController.h"
+
+
 void AStarfallPlayerState::AddToScore(float ScoreAmount)
 {
 	Score += ScoreAmount;
@@ -13,10 +15,12 @@ void AStarfallPlayerState::AddToScore(float ScoreAmount)
 		Controller = Controller == nullptr ? Cast<AStarfallPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDScore(ScoreAmount);
+			Controller->SetHUDScore(Score);
 		}
 	}
 }
+
+
 void AStarfallPlayerState::OnRep_Score()
 {
 	Super::OnRep_Score();

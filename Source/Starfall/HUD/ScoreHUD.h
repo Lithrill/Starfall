@@ -24,15 +24,7 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ScoreAmount;
-
-	/*class UScoreHUD* ScoreHUD;*/
-
-	/*virtual void NativeDestruct() override;
-	void AddCharacterScoreWidget();*/
-
-	/*UPROPERTY(EditAnywhere, Category = "Player Stats")
-	TSubclassOf<class UUserWidget> CharacterScoreClass;*/
-
+	
 	
 	
 protected:

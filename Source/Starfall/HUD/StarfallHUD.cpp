@@ -24,6 +24,14 @@ void AStarfallHUD::AddCharacterOverlay()
 		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
 		CharacterOverlay->AddToViewport();
 	}
+
+	//APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && ScoreHUDClass)
+	{
+		ScoreHUD = CreateWidget<UScoreHUD>(PlayerController, ScoreHUDClass);
+		ScoreHUD->AddToViewport();
+		ScoreHUD->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 
@@ -92,25 +100,10 @@ void AStarfallHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, 
 
 void AStarfallHUD::ScoreWidgetAdd()
 {
-	
-	
-		APlayerController* PlayerController = GetOwningPlayerController();
-		if (PlayerController && ScoreHUDClass)
-		{
-			ScoreHUD = CreateWidget<UScoreHUD>(PlayerController, ScoreHUDClass);
-			ScoreHUD->AddToViewport();
-		}
-		
-
-		
-	
+	ScoreHUD->SetVisibility(ESlateVisibility::Visible);
 }
 
 void AStarfallHUD::ScoreWidgetRemove()
 {
-	if (ScoreHUD)
-	{
-		ScoreHUD->RemoveFromParent();
-	}
-	
+	ScoreHUD->SetVisibility(ESlateVisibility::Hidden);
 }
