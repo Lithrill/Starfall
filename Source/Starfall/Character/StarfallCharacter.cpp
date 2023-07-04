@@ -23,6 +23,8 @@
 #include "Starfall/ElimAnimations/HumanElimAnimation.h"
 #include "Engine/World.h"
 #include "Starfall/HUD/ScoreHUD.h"
+#include "Starfall/HUD/StarfallHUD.h"
+
 
 
 // Sets default values
@@ -189,6 +191,7 @@ void AStarfallCharacter::BeginPlay()
 		}
 	}
 	
+
 }
 
 void AStarfallCharacter::Tick(float DeltaTime)
@@ -410,33 +413,38 @@ void AStarfallCharacter::ScorePressed()
 {
 	if (!WasScorePressed)
 	{
-		
-		APlayerController* PlayerController = IsValid(this) ? Cast<APlayerController>(this->GetController()) : nullptr;
-
-		if (PlayerController && CharacterScoreClass)
-		{
-			ScoreHUD = CreateWidget<UScoreHUD>(PlayerController, CharacterScoreClass);
-			ScoreHUD->AddToViewport();
-		}
-
-
-		//UScoreHUD* TheScoreHUDWidget = NewObject<UScoreHUD>(this);
-		//if (TheScoreHUDWidget)
-		//{
-		//	TheScoreHUDWidget->AddToViewport();
-		//	//TheScoreHUDWidget->AddCharacterScoreWidget();
-		//}
 		WasScorePressed = true;
+		APlayerController* PlayerController = IsValid(this) ? Cast<APlayerController>(this->GetController()) : nullptr;
+		if (PlayerController)
+		{
+			AStarfallHUD* StarfallHUDWidget = Cast<AStarfallHUD>(PlayerController->GetHUD());
+			if (StarfallHUDWidget)
+			{
+				StarfallHUDWidget->ScoreWidgetAdd();
+				
+			}
+		}
 	}
 }
 
 void AStarfallCharacter::ScoreReleased()
 {
-	if (ScoreHUD)
+	if (WasScorePressed)
 	{
-		ScoreHUD->NativeDestruct();
+		WasScorePressed = false;
+		APlayerController* PlayerController = IsValid(this) ? Cast<APlayerController>(this->GetController()) : nullptr;
+
+		if (PlayerController)
+		{
+			AStarfallHUD* StarfallHUDWidget = Cast<AStarfallHUD>(PlayerController->GetHUD());
+			if (StarfallHUDWidget)
+			{
+				StarfallHUDWidget->ScoreWidgetRemove();
+				
+			}
+		}
 	}
-	WasScorePressed = false;
+	
 }
 
 void AStarfallCharacter::FireReleased()

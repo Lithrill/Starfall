@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+
 #include "StarfallHUD.generated.h"
 
 USTRUCT(BlueprintType)
@@ -34,11 +35,30 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<class UUserWidget> CharacterOverlayClass;
 
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	TSubclassOf<class UUserWidget> ScoreHUDClass;
+
+	class UScoreHUD* ScoreHUD;
+
 	class UCharacterOverlay* CharacterOverlay;
+
+	/*UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<class UUserWidget> CharacterScoreClass;*/
+
+
+	//UPROPERTY(EditAnywhere, Category = "Character HUD")
+	//TSubclassOf<class UUserWidget> CharacterScoreHUDClass;
+
+
+
+	void ScoreWidgetAdd();
+	void ScoreWidgetRemove();
+
 
 protected:
 	virtual void BeginPlay() override;
 	void AddCharacterOverlay();
+
 
 private:
 	FHUDPackage HUDPackage;

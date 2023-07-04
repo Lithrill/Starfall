@@ -7,6 +7,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Starfall/Character/StarfallCharacter.h"
+#include "Starfall/HUD/ScoreHUD.h"
 
 void AStarfallPlayerController::BeginPlay()
 {
@@ -41,6 +42,20 @@ void AStarfallPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
 		StarfallHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
+}
+
+void AStarfallPlayerController::SetHUDScore(float Score)
+{
+	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
+	bool bHUDValid = StarfallHUD &&
+		StarfallHUD->ScoreHUD &&
+		StarfallHUD->ScoreHUD->ScoreAmount;
+	if (bHUDValid)
+	{
+		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
+		StarfallHUD->ScoreHUD->ScoreAmount->SetText(FText::FromString(ScoreText));
+	}
+		
 }
 
 

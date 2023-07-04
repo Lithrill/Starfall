@@ -2,18 +2,17 @@
 
 
 #include "ScoreHUD.h"
-#include "CharacterOverlay.h"
-#include "GameFramework/PlayerController.h"
 
 
-void UScoreHUD::NativeDestruct()
-{
-	RemoveFromParent();
-	Super::NativeDestruct();
-    
-}
 
-void UScoreHUD::AddCharacterScoreWidget()
+//void UScoreHUD::NativeDestruct()
+//{
+//	RemoveFromParent();
+//	Super::NativeDestruct();
+//    
+//}
+
+/*void UScoreHUD::AddCharacterScoreWidget()
 {
     
     APawn* OwningPawn = GetOwningPlayerPawn();
@@ -23,5 +22,5 @@ void UScoreHUD::AddCharacterScoreWidget()
     {
         ScoreHUD = CreateWidget<UScoreHUD>(PlayerController, CharacterScoreClass);
         ScoreHUD->AddToViewport();
-    }
-}
+ */  
+

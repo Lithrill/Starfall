@@ -4,6 +4,8 @@
 #include "StarfallHUD.h"
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
+#include "ScoreHUD.h"
+
 
 void AStarfallHUD::BeginPlay()
 {
@@ -11,6 +13,8 @@ void AStarfallHUD::BeginPlay()
 
 	AddCharacterOverlay();
 }
+
+
 
 void AStarfallHUD::AddCharacterOverlay()
 {
@@ -84,4 +88,29 @@ void AStarfallHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, 
 		1.f,
 		CrosshairColor
 	);
+}
+
+void AStarfallHUD::ScoreWidgetAdd()
+{
+	
+	
+		APlayerController* PlayerController = GetOwningPlayerController();
+		if (PlayerController && ScoreHUDClass)
+		{
+			ScoreHUD = CreateWidget<UScoreHUD>(PlayerController, ScoreHUDClass);
+			ScoreHUD->AddToViewport();
+		}
+		
+
+		
+	
+}
+
+void AStarfallHUD::ScoreWidgetRemove()
+{
+	if (ScoreHUD)
+	{
+		ScoreHUD->RemoveFromParent();
+	}
+	
 }

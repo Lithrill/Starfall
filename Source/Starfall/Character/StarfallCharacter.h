@@ -35,20 +35,16 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 
+	
 	UPROPERTY(EditAnywhere, Category = Combat)
 	TSubclassOf<class AHumanElimAnimation> ElimVehicleToSpawn;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UScoreHUD> ScoreHUDWidget;
 
-	//UPROPERTY(EditAnywhere, Category = "Character HUD")
-	//TSubclassOf<class UUserWidget> CharacterScoreHUDClass;
+
+	UPROPERTY()
+	class AStarfallHUD* StarfallHUD;
 
 	bool WasScorePressed = false;
-	class UScoreHUD* ScoreHUD;
-
-	UPROPERTY(EditAnywhere, Category = "UI")
-	TSubclassOf<class UUserWidget> CharacterScoreClass;
 
 protected:
 	// Called when the game starts or when spawned
@@ -174,7 +170,7 @@ private:
 
 	class AStarfallPlayerController* StarfallPlayerController;
 
-	
+
 
 	bool bElimmed = false;
 
@@ -212,6 +208,7 @@ private:
 	/*
 	* Elim bot
 	*/
+
 
 
 public:	

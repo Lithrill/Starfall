@@ -13,7 +13,7 @@ void AStarfallPlayerState::AddToScore(float ScoreAmount)
 		Controller = Controller == nullptr ? Cast<AStarfallPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-
+			Controller->SetHUDScore(ScoreAmount);
 		}
 	}
 }
@@ -27,7 +27,7 @@ void AStarfallPlayerState::OnRep_Score()
 		Controller = Controller == nullptr ? Cast<AStarfallPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-
+			Controller->SetHUDScore(Score);
 		}
 	}
 }
