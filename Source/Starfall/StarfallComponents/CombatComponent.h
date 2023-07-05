@@ -49,8 +49,11 @@ protected:
 
 	void SetHUDCrosshairs(float DeltaTime);
 private:
+	UPROPERTY()
 	class AStarfallCharacter* Character;
+	UPROPERTY()
 	class AStarfallPlayerController* Controller;
+	UPROPERTY()
 	class AStarfallHUD* HUD;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
@@ -107,6 +110,8 @@ private:
 
 	void StartFireTimer();
 	void FireTimerFinished();
+
+	bool CanFire();
 
 public:	
 	

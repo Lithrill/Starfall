@@ -170,6 +170,7 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	UPROPERTY()
 	class AStarfallPlayerController* StarfallPlayerController;
 
 
@@ -211,7 +212,7 @@ private:
 	* Elim bot
 	*/
 
-
+	UPROPERTY()
 	class AStarfallPlayerState* StarfallPlayerState;
 public:	
 	void SetOVerlappingWeapon(AWeapon* Weapon);

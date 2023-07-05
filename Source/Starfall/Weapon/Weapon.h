@@ -27,6 +27,8 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnRep_Owner();
+	void SetHUDAmmo();
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
 	void Dropped();
@@ -114,7 +116,21 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ACasing> CasingClass;
 
-	
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	int32 Ammo;
+
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();
+
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
+
+	UPROPERTY()
+	class AStarfallCharacter* StarfallOwnerCharacter;
+	UPROPERTY()
+	class AStarfallPlayerController* StarfallOwnerController;
 
 public:	
 	void SetWeaponState(EWeaponState State);
@@ -122,4 +138,5 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomedFOV; }
+	bool IsEmpty();
 };

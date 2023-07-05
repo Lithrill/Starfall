@@ -101,9 +101,10 @@ void AStarfallCharacter::Elim()
 
 void AStarfallCharacter::MulticastElim_Implementation()
 {
-	
-	
-
+	if (StarfallPlayerController)
+	{
+		StarfallPlayerController->SetHUDWeaponAmmo(0);
+	}
 	bElimmed = true;
 	PlayElimMontage();
 
@@ -616,6 +617,7 @@ void AStarfallCharacter::PollInit()
 		if (StarfallPlayerState)
 		{
 			StarfallPlayerState->AddToScore(0.f);
+			StarfallPlayerState->AddToDefeats(0);
 		}
 	}
 }

@@ -4,22 +4,55 @@
 #include "StarfallPlayerState.h"
 #include "Starfall/Character/StarfallCharacter.h"
 #include "Starfall/PlayerController/StarfallPlayerController.h"
+#include "Net/UnrealNetwork.h"
 
+void AStarfallPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AStarfallPlayerState, Defeats);
+}
 
 void AStarfallPlayerState::AddToScore(float ScoreAmount)
 {
-	Score += ScoreAmount;
+	SetScore(GetScore() + ScoreAmount);
 	Character = Character == nullptr ? Cast<AStarfallCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<AStarfallPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDScore(Score);
+			Controller->SetHUDScore(GetScore());
 		}
 	}
 }
 
+void AStarfallPlayerState::AddToDefeats(int32 DefeatsAmount)
+{
+	Defeats += DefeatsAmount;
+	Character = Character == nullptr ? Cast<AStarfallCharacter>(GetPawn()) : Character;
+	if (Character)
+	{
+		Controller = Controller == nullptr ? Cast<AStarfallPlayerController>(Character->Controller) : Controller;
+		if (Controller)
+		{
+			Controller->SetHUDDefeats(Defeats);
+		}
+	}
+}
+
+void AStarfallPlayerState::OnRep_Defeats()
+{
+	Character = Character == nullptr ? Cast<AStarfallCharacter>(GetPawn()) : Character;
+	if (Character)
+	{
+		Controller = Controller == nullptr ? Cast<AStarfallPlayerController>(Character->Controller) : Controller;
+		if (Controller)
+		{
+			Controller->SetHUDDefeats(Defeats);
+		}
+	}
+}
 
 void AStarfallPlayerState::OnRep_Score()
 {
@@ -31,7 +64,7 @@ void AStarfallPlayerState::OnRep_Score()
 		Controller = Controller == nullptr ? Cast<AStarfallPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDScore(Score);
+			Controller->SetHUDScore(GetScore());
 		}
 	}
 }

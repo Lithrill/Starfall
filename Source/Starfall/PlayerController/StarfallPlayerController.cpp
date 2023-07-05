@@ -46,19 +46,61 @@ void AStarfallPlayerController::SetHUDHealth(float Health, float MaxHealth)
 
 void AStarfallPlayerController::SetHUDScore(float Score)
 {
-	UE_LOG(LogTemp, Error, TEXT("Stage 0"));
+	
 	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
 	bool bHUDValid = StarfallHUD &&
 		StarfallHUD->ScoreHUD &&
 		StarfallHUD->ScoreHUD->ScoreAmount;
-	UE_LOG(LogTemp, Error, TEXT("Stage 1"));
+	
 	if (bHUDValid)
 	{
 		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
 		StarfallHUD->ScoreHUD->ScoreAmount->SetText(FText::FromString(ScoreText));
-		UE_LOG(LogTemp, Error, TEXT("Stage 2"));
+
 	}
 		
+}
+
+void AStarfallPlayerController::SetHUDDefeats(int32 Defeats)
+{
+	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
+	bool bHUDValid = StarfallHUD &&
+		StarfallHUD->ScoreHUD &&
+		StarfallHUD->ScoreHUD->DefeatsAmount;
+	if (bHUDValid)
+	{
+		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
+		StarfallHUD->ScoreHUD->DefeatsAmount->SetText(FText::FromString(DefeatsText));
+
+	}
+}
+
+void AStarfallPlayerController::SetHUDWeaponAmmo(int32 Ammo)
+{
+	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
+	bool bHUDValid = StarfallHUD &&
+		StarfallHUD->CharacterOverlay &&
+		StarfallHUD->CharacterOverlay->WeaponAmmoAmount;
+	if (bHUDValid)
+	{
+		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+		StarfallHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
+
+	}
+}
+
+void AStarfallPlayerController::SetHUDCarriedAmmo(int32 Ammo)
+{
+	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
+	bool bHUDValid = StarfallHUD &&
+		StarfallHUD->CharacterOverlay &&
+		StarfallHUD->CharacterOverlay->CarriedAmmoAmount;
+	if (bHUDValid)
+	{
+		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+		StarfallHUD->CharacterOverlay->CarriedAmmoAmount->SetText(FText::FromString(AmmoText));
+
+	}
 }
 
 

@@ -38,6 +38,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* Tracer;
 
+	
 	class UNiagaraSystemComponent* TracerComponent;
 
 	UPROPERTY(EditAnywhere)

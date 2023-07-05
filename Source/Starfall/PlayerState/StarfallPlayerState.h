@@ -15,10 +15,26 @@ class STARFALL_API AStarfallPlayerState : public APlayerState
 	GENERATED_BODY()
 	
 public:
-	virtual void OnRep_Score() override;
-	void AddToScore(float ScoreAmount);
+	/*
+	*	Replication notifies
+	*/
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnRep_Score() override;
+
+	UFUNCTION()
+	virtual void OnRep_Defeats();
+
+	void AddToScore(float ScoreAmount);
+	void AddToDefeats(int32 DefeatsAmount);
+	
+	
 private:
+	UPROPERTY()
 	class AStarfallCharacter* Character;
+	UPROPERTY()
 	class AStarfallPlayerController* Controller;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
+	int32 Defeats;
 };
