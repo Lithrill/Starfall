@@ -25,6 +25,7 @@
 #include "Starfall/HUD/ScoreHUD.h"
 #include "Starfall/HUD/StarfallHUD.h"
 #include "Starfall/PlayerState/StarfallPlayerState.h"
+#include "Starfall/Weapon/WeaponTypes.h"
 
 
 
@@ -236,6 +237,7 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AStarfallCharacter::FireReleased);
 		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::ScorePressed);
 		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Completed, this, &AStarfallCharacter::ScoreReleased);
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::ReloadPressed);
 	}
 }
 
@@ -258,6 +260,27 @@ void AStarfallCharacter::PlayFireMontage(bool bAiming)
 		AnimInstance->Montage_Play(FireWeaponMontage);
 		FName SectionName;
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void AStarfallCharacter::PlayReloadMontage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ReloadMontage)
+	{
+		AnimInstance->Montage_Play(ReloadMontage);
+		FName SectionName;
+	
+		switch (Combat->EquippedWeapon->GetWeaponType())
+		{
+		case EWeaponType::EWT_AssaultRifle:
+			SectionName = FName("Rifle");
+			break;
+		}
+
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
@@ -448,6 +471,14 @@ void AStarfallCharacter::ScoreReleased()
 		}
 	}
 	
+}
+
+void AStarfallCharacter::ReloadPressed()
+{
+	if (Combat)
+	{
+		Combat->Reload();
+	}
 }
 
 void AStarfallCharacter::FireReleased()
@@ -695,6 +726,11 @@ FVector AStarfallCharacter::GetHitTarget() const
 	return Combat->HitTarget;
 }
 
+ECombatState AStarfallCharacter::GetCombatState() const
+{
+	if (Combat == nullptr) return ECombatState::ECS_MAX;
+	return Combat->CombatState;
+}
 
 
 

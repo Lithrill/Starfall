@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Starfall/Weapon/Weapon.h"
+#include "Starfall/StarfallTypes/CombatState.h"
 
 
 void UStarfallCharacterAnimInstance::NativeInitializeAnimation()
@@ -68,4 +69,6 @@ void UStarfallCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 		
 	}
+
+	bUseFABRIK = StarfallCharacter->GetCombatState() != ECombatState::ECS_Reloading;
 }

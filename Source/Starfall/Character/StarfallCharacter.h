@@ -8,6 +8,7 @@
 #include "Starfall/StarfallTypes/TurningInPlace.h"
 #include "Starfall/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
+#include "Starfall/StarfallTypes/CombatState.h"
 #include "StarfallCharacter.generated.h"
 
 class UInputMappingContext;
@@ -27,6 +28,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
+	void PlayReloadMontage();
 	void PlayElimMontage();
 	virtual void OnRep_ReplicatedMovement() override;
 
@@ -77,6 +79,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* ScoreAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* ReloadAction;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
@@ -91,7 +96,7 @@ protected:
 	void FireReleased();
 	void ScorePressed();
 	void ScoreReleased();
-	
+	void ReloadPressed();
 	
 
 	void PlayHitReactMontage();
@@ -121,7 +126,7 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
 
 	UFUNCTION(Server, Reliable)
@@ -135,6 +140,10 @@ private:
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
 
+	/*
+	*	Animation Montages
+	*/
+
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
 
@@ -143,6 +152,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* ElimMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* ReloadMontage;
 
 	void HideCameraIfCharacterClose();
 
@@ -229,4 +241,5 @@ public:
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+	ECombatState GetCombatState() const;
 };
