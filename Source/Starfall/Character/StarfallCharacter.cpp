@@ -26,6 +26,7 @@
 #include "Starfall/HUD/StarfallHUD.h"
 #include "Starfall/PlayerState/StarfallPlayerState.h"
 #include "Starfall/Weapon/WeaponTypes.h"
+#include "Starfall/GameMode/StarfallGameMode.h"
 
 
 
@@ -75,6 +76,33 @@ void AStarfallCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 	DOREPLIFETIME_CONDITION(AStarfallCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME(AStarfallCharacter, Health);
+	DOREPLIFETIME(AStarfallCharacter, bDisableGameplay);
+}
+
+// Called when the game starts or when spawned
+void AStarfallCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UpdateHUDHealth();
+
+	if (HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &AStarfallCharacter::ReceiveDamage);
+	}
+
+
+	SetUpPlayerInput();
+}
+
+void AStarfallCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+
+	RotateInPlace(DeltaTime);
+	HideCameraIfCharacterClose();
+	PollInit();
 }
 
 void AStarfallCharacter::OnRep_ReplicatedMovement()
@@ -98,6 +126,25 @@ void AStarfallCharacter::Elim()
 		ElimDelay
 	);
 
+}
+
+void AStarfallCharacter::Destroy()
+{
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Destroy();
+	}
+}
+
+void AStarfallCharacter::SetUpPlayerInput()
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(StarfallCharacterMappingContext, 0);
+		}
+	}
 }
 
 void AStarfallCharacter::MulticastElim_Implementation()
@@ -126,10 +173,7 @@ void AStarfallCharacter::MulticastElim_Implementation()
 
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
-	if (StarfallPlayerController)
-	{
-		DisableInput(StarfallPlayerController);
-	}
+	bDisableGameplay = true;
 	// Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -174,33 +218,17 @@ void AStarfallCharacter::ElimTimerFinished()
 	}
 }
 
-// Called when the game starts or when spawned
-void AStarfallCharacter::BeginPlay()
+
+
+void AStarfallCharacter::RotateInPlace(float DeltaTime)
 {
-	Super::BeginPlay();
-
-	UpdateHUDHealth();
-
-	if (HasAuthority())
+	if (bDisableGameplay)
 	{
-		OnTakeAnyDamage.AddDynamic(this, &AStarfallCharacter::ReceiveDamage);
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
 	}
-	
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(StarfallCharacterMappingContext, 0);
-		}
-	}
-	
-
-}
-
-void AStarfallCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
+		
 	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
 	{
 		AimOffset(DeltaTime);
@@ -214,9 +242,6 @@ void AStarfallCharacter::Tick(float DeltaTime)
 		}
 		CalculateAO_Pitch();
 	}
-
-	HideCameraIfCharacterClose();
-	PollInit();
 }
 
 // Called to bind functionality to input
@@ -351,7 +376,7 @@ void AStarfallCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const
 
 void AStarfallCharacter::Move(const FInputActionValue& Value)
 {
-	
+	if (bDisableGameplay) return;
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	const FRotator Rotation = Controller->GetControlRotation();
@@ -374,6 +399,7 @@ void AStarfallCharacter::Look(const FInputActionValue& Value)
 }
 void AStarfallCharacter::Jump()
 {
+	if (bDisableGameplay) return;
 	if (bIsCrouched)
 	{
 		UnCrouch();
@@ -386,6 +412,7 @@ void AStarfallCharacter::Jump()
 
 void AStarfallCharacter::Equip()
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		if (HasAuthority())
@@ -401,6 +428,7 @@ void AStarfallCharacter::Equip()
 
 void AStarfallCharacter::Crouch()
 {
+	if (bDisableGameplay) return;
 	if (bIsCrouched)
 	{
 		ACharacter::UnCrouch();
@@ -413,6 +441,7 @@ void AStarfallCharacter::Crouch()
 
 void AStarfallCharacter::Aim()
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->SetAiming(true);
@@ -421,6 +450,7 @@ void AStarfallCharacter::Aim()
 
 void AStarfallCharacter::AimEnd()
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->SetAiming(false);
@@ -429,6 +459,7 @@ void AStarfallCharacter::AimEnd()
 
 void AStarfallCharacter::FirePressed()
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->FireButtonPressed(true);
@@ -437,6 +468,7 @@ void AStarfallCharacter::FirePressed()
 
 void AStarfallCharacter::ScorePressed()
 {
+	if (bDisableGameplay) return;
 	if (!WasScorePressed)
 	{
 		WasScorePressed = true;
@@ -455,6 +487,7 @@ void AStarfallCharacter::ScorePressed()
 
 void AStarfallCharacter::ScoreReleased()
 {
+	if (bDisableGameplay) return;
 	if (WasScorePressed)
 	{
 		WasScorePressed = false;
@@ -475,6 +508,7 @@ void AStarfallCharacter::ScoreReleased()
 
 void AStarfallCharacter::ReloadPressed()
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->Reload();
@@ -483,6 +517,7 @@ void AStarfallCharacter::ReloadPressed()
 
 void AStarfallCharacter::FireReleased()
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->FireButtonPressed(false);

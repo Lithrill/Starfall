@@ -38,26 +38,28 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<class UUserWidget> ScoreHUDClass;
 
+	UPROPERTY()
 	class UScoreHUD* ScoreHUD;
 
+	void AddCharacterOverlay();
+
+	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
-
-	/*UPROPERTY(EditAnywhere, Category = "UI")
-	TSubclassOf<class UUserWidget> CharacterScoreClass;*/
-
-
-	//UPROPERTY(EditAnywhere, Category = "Character HUD")
-	//TSubclassOf<class UUserWidget> CharacterScoreHUDClass;
-
-
 
 	void ScoreWidgetAdd();
 	void ScoreWidgetRemove();
 
+	UPROPERTY(EditAnywhere, Category = "Announcements")
+	TSubclassOf<UUserWidget> AnnouncementClass;
+
+	UPROPERTY()
+	class UAnnouncement* Announcement;
+
+	void AddAnnouncement();
 
 protected:
 	virtual void BeginPlay() override;
-	void AddCharacterOverlay();
+	
 
 
 private:

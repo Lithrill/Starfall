@@ -34,6 +34,10 @@ public:
 
 	void Elim();
 
+	void Destroy();
+
+	void SetUpPlayerInput();
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 
@@ -47,6 +51,9 @@ public:
 	class AStarfallHUD* StarfallHUD;
 
 	bool WasScorePressed = false;
+
+	UPROPERTY(Replicated)
+	bool bDisableGameplay = false;
 
 protected:
 	// Called when the game starts or when spawned
@@ -107,7 +114,7 @@ protected:
 
 	// Poll for any relevant classes and initialize our hud
 	void PollInit();
-
+	void RotateInPlace(float DeltaTime);
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent* CameraBoom;
@@ -242,4 +249,6 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState() const;
+	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+	FORCEINLINE bool GetDisabledGameplay() const { return bDisableGameplay; }
 };

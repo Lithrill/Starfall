@@ -8,13 +8,82 @@
 #include "Components/TextBlock.h"
 #include "Starfall/Character/StarfallCharacter.h"
 #include "Starfall/HUD/ScoreHUD.h"
+#include "Net/UnrealNetwork.h"
+#include "Starfall/GameMode/StarfallGameMode.h"
+#include "Starfall/HUD/Announcement.h"
+#include "Kismet/GameplayStatics.h"
+#include "Starfall/StarfallComponents/CombatComponent.h"
+#include "Starfall/Character/StarfallCharacter.h"
+
 
 void AStarfallPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
 	StarfallHUD = Cast<AStarfallHUD>(GetHUD());
+	ServerCheckMatchState();
 }
+
+void AStarfallPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AStarfallPlayerController, MatchState);
+}
+
+void AStarfallPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	SetHUDTime();
+	CheckTimeSync(DeltaTime);
+	PollInit();
+}
+
+void AStarfallPlayerController::CheckTimeSync(float DeltaTime)
+{
+	TimeSyncRunningTime += DeltaTime;
+	if (IsLocalController() && TimeSyncRunningTime > TimeSyncFrequency)
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+		TimeSyncRunningTime = 0.f;
+	}
+}
+
+
+
+void AStarfallPlayerController::ServerCheckMatchState_Implementation()
+{
+
+	AStarfallGameMode* GameMode = Cast<AStarfallGameMode>(UGameplayStatics::GetGameMode(this));
+	if (GameMode)
+	{
+		WarmupTime = GameMode->WarmupTime;
+		MatchTime = GameMode->MatchTime;
+		CooldownTime = GameMode->CooldownTime;
+		LevelStartingTime = GameMode->LevelStartingTime;
+		MatchState = GameMode->GetMatchState();
+		ClientJoinMidgame(MatchState, WarmupTime, MatchTime, CooldownTime, LevelStartingTime);
+	}
+}
+
+void AStarfallPlayerController::ClientJoinMidgame_Implementation(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime)
+{
+	WarmupTime = Warmup;
+	MatchTime = Match;
+	CooldownTime = Cooldown;
+	LevelStartingTime = StartingTime;
+	MatchState = StateOfMatch;
+	OnMatchStateSet(MatchState);
+
+
+	if (StarfallHUD && MatchState == MatchState::WaitingToStart)
+	{
+		StarfallHUD->AddAnnouncement();
+	}
+	
+}
+
 
 void AStarfallPlayerController::OnPossess(APawn* InPawn)
 {
@@ -25,6 +94,8 @@ void AStarfallPlayerController::OnPossess(APawn* InPawn)
 	{
 		SetHUDHealth(StarfallCharacter->GetHealth(), StarfallCharacter->GetMaxHealth());
 	}
+
+	
 }
 
 void AStarfallPlayerController::SetHUDHealth(float Health, float MaxHealth)
@@ -42,6 +113,13 @@ void AStarfallPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
 		StarfallHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDHealth = Health;
+		HUDMaxHealth = MaxHealth;
+	}
+
 }
 
 void AStarfallPlayerController::SetHUDScore(float Score)
@@ -58,6 +136,11 @@ void AStarfallPlayerController::SetHUDScore(float Score)
 		StarfallHUD->ScoreHUD->ScoreAmount->SetText(FText::FromString(ScoreText));
 
 	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDScore = Score;
+	}
 		
 }
 
@@ -72,6 +155,11 @@ void AStarfallPlayerController::SetHUDDefeats(int32 Defeats)
 		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
 		StarfallHUD->ScoreHUD->DefeatsAmount->SetText(FText::FromString(DefeatsText));
 
+	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDDefeats = Defeats;
 	}
 }
 
@@ -103,4 +191,222 @@ void AStarfallPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 	}
 }
 
+void AStarfallPlayerController::SetHUDMatchCountdown(float CountdownTime)
+{
+	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
+	bool bHUDValid = StarfallHUD &&
+		StarfallHUD->CharacterOverlay &&
+		StarfallHUD->CharacterOverlay->MatchCountdownText;
 
+	if (bHUDValid)
+	{
+		if (CountdownTime < 0.f)
+		{
+			StarfallHUD->CharacterOverlay->MatchCountdownText->SetText(FText());
+			return;
+		}
+		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
+		int32 Seconds = CountdownTime - Minutes * 60;
+
+
+		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+		StarfallHUD->CharacterOverlay->MatchCountdownText->SetText(FText::FromString(CountdownText));
+
+	}
+}
+
+void AStarfallPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
+{
+	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
+	bool bHUDValid = StarfallHUD &&
+		StarfallHUD->Announcement &&
+		StarfallHUD->Announcement->WarmupTime;
+
+	if (bHUDValid)
+	{
+		if (CountdownTime < 0.f)
+		{
+			StarfallHUD->Announcement->WarmupTime->SetText(FText());
+			return;
+		}
+		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
+		int32 Seconds = CountdownTime - Minutes * 60;
+
+
+		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+		StarfallHUD->Announcement->WarmupTime->SetText(FText::FromString(CountdownText));
+
+	}
+}
+
+void AStarfallPlayerController::SetHUDTime()
+{
+	float TimeLeft = 0.f;
+	if (MatchState == MatchState::WaitingToStart) TimeLeft = WarmupTime - GetServerTime() + LevelStartingTime;
+	else if (MatchState == MatchState::InProgress) TimeLeft = WarmupTime + MatchTime - GetServerTime() + LevelStartingTime;
+	else if (MatchState == MatchState::Cooldown) TimeLeft = CooldownTime + WarmupTime + MatchTime - GetServerTime() + LevelStartingTime;
+
+	uint32 SecondsLeft = FMath::CeilToInt(TimeLeft);
+
+	if (HasAuthority())
+	{
+		StarfallGameMode = StarfallGameMode == nullptr ? Cast<AStarfallGameMode>(UGameplayStatics::GetGameMode(this)) : StarfallGameMode;
+		if (StarfallGameMode)
+		{
+			SecondsLeft = FMath::CeilToInt(StarfallGameMode->GetCountdownTime() + LevelStartingTime);
+		}
+	}
+
+	if (CountdownInt != SecondsLeft)
+	{
+		if (MatchState == MatchState::WaitingToStart || MatchState == MatchState::Cooldown)
+		{
+			SetHUDAnnouncementCountdown(TimeLeft);
+		}
+		if (MatchState == MatchState::InProgress)
+		{
+			SetHUDMatchCountdown(TimeLeft);
+		}
+	}
+
+	CountdownInt = SecondsLeft;
+}
+
+void AStarfallPlayerController::PollInit()
+{
+	if (CharacterOverlay == nullptr)
+	{
+		if (StarfallHUD && StarfallHUD->CharacterOverlay)
+		{
+			CharacterOverlay = StarfallHUD->CharacterOverlay;
+			if (CharacterOverlay)
+			{
+				SetHUDHealth(HUDHealth, HUDMaxHealth);
+			}
+		}
+		
+	}
+	if (ScoreHUD == nullptr)
+	{
+		if (StarfallHUD && StarfallHUD->ScoreHUD)
+		{
+			ScoreHUD = StarfallHUD->ScoreHUD;
+			if (ScoreHUD)
+			{
+				SetHUDScore(HUDScore);
+				SetHUDDefeats(HUDDefeats);
+			}
+		}
+	}
+
+	
+		AStarfallPlayerController* StarfallPlayerController = IsValid(this) ? Cast<AStarfallPlayerController>(this) : nullptr;
+		if (StarfallPlayerController)
+		{
+			AStarfallCharacter* MyStarfallControlledCharacter = Cast<AStarfallCharacter>(StarfallPlayerController->GetPawn());
+			if (MyStarfallControlledCharacter)
+			{
+				MyStarfallControlledCharacter->SetUpPlayerInput();
+			}
+		}
+	
+}
+
+
+
+void AStarfallPlayerController::ServerRequestServerTime_Implementation(float TimeOfClientRequest)
+{
+	float ServerTimeOfReceipt = GetWorld()->GetTimeSeconds();
+	ClientReportServerTime(TimeOfClientRequest, ServerTimeOfReceipt);
+}
+
+void AStarfallPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest, float TimeServerReceivedClientRequest)
+{
+	float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest;
+	float CurrentServerTime = TimeServerReceivedClientRequest + (0.5f * RoundTripTime);
+	ClientServerDelta = CurrentServerTime - GetWorld()->GetTimeSeconds();
+}
+
+float AStarfallPlayerController::GetServerTime()
+{
+	/*if (HasAuthority()) return GetWorld()->GetRealTimeSeconds();*/
+	/*else */return GetWorld()->GetRealTimeSeconds() + ClientServerDelta;
+}
+
+void AStarfallPlayerController::ReceivedPlayer()
+{
+	Super::ReceivedPlayer();
+
+	if (IsLocalController())
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+	}
+}
+
+void AStarfallPlayerController::OnMatchStateSet(FName State)
+{
+	MatchState = State;
+
+
+	if (MatchState == MatchState::InProgress)
+	{
+		HandleMatchHasStarted();
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
+	}
+}
+
+
+void AStarfallPlayerController::OnRep_MatchState()
+{
+	if (MatchState == MatchState::InProgress)
+	{
+		HandleMatchHasStarted();
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
+	}
+}
+
+void AStarfallPlayerController::HandleMatchHasStarted()
+{
+	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
+	if (StarfallHUD)
+	{
+		StarfallHUD->AddCharacterOverlay();
+		if (StarfallHUD->Announcement)
+		{
+			StarfallHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+void AStarfallPlayerController::HandleCooldown()
+{
+	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
+	if (StarfallHUD)
+	{
+		StarfallHUD->CharacterOverlay->RemoveFromParent();
+		StarfallHUD->ScoreHUD->RemoveFromParent();
+		bool bHUDValid = StarfallHUD->Announcement && 
+			StarfallHUD->Announcement->AnnouncementText && 
+			StarfallHUD->Announcement->InfoText;
+
+		if (bHUDValid)
+		{
+			StarfallHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
+			FString AnnouncementText("New Match Starts In:");
+			StarfallHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
+			StarfallHUD->Announcement->InfoText->SetText(FText());
+		}
+	}
+	AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(GetPawn());
+	if (StarfallCharacter && StarfallCharacter->GetCombat())
+	{
+		StarfallCharacter->bDisableGameplay = true;
+		StarfallCharacter->GetCombat()->FireButtonPressed(false);
+	}
+}

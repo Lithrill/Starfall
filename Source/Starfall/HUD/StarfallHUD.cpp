@@ -5,13 +5,12 @@
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
 #include "ScoreHUD.h"
+#include "Announcement.h"
 
 
 void AStarfallHUD::BeginPlay()
 {
 	Super::BeginPlay();
-
-	AddCharacterOverlay();
 }
 
 
@@ -34,6 +33,15 @@ void AStarfallHUD::AddCharacterOverlay()
 	}
 }
 
+void AStarfallHUD::AddAnnouncement()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && AnnouncementClass && Announcement == nullptr)
+	{
+		Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
+		Announcement->AddToViewport();
+	}
+}
 
 void AStarfallHUD::DrawHUD()
 {
