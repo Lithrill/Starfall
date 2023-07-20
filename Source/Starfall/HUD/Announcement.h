@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Announcement.generated.h"
 
+
 /**
  * 
  */
@@ -20,6 +21,9 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* AnnouncementText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UUniformGridPanel* InfoTextGridBox;
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* InfoText;

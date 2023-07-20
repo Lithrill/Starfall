@@ -27,6 +27,7 @@
 #include "Starfall/PlayerState/StarfallPlayerState.h"
 #include "Starfall/Weapon/WeaponTypes.h"
 #include "Starfall/GameMode/StarfallGameMode.h"
+#include "Kismet/GameplayStatics.h"
 
 
 
@@ -130,7 +131,10 @@ void AStarfallCharacter::Elim()
 
 void AStarfallCharacter::Destroy()
 {
-	if (Combat && Combat->EquippedWeapon)
+	AStarfallGameMode* StarfallGameMode = Cast<AStarfallGameMode>(UGameplayStatics::GetGameMode(this));
+	bool bMatchNotInProgress = StarfallGameMode->GetMatchState() != MatchState::InProgress;
+
+	if (Combat && Combat->EquippedWeapon && bMatchNotInProgress)
 	{
 		Combat->EquippedWeapon->Destroy();
 	}
@@ -174,6 +178,10 @@ void AStarfallCharacter::MulticastElim_Implementation()
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
 	bDisableGameplay = true;
+	if (Combat)
+	{
+		Combat->FireButtonPressed(false);
+	}
 	// Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);

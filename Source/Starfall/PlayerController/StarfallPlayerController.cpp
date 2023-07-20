@@ -14,6 +14,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "Starfall/StarfallComponents/CombatComponent.h"
 #include "Starfall/Character/StarfallCharacter.h"
+#include "Starfall/PlayerState/StarfallPlayerState.h"
+#include "Starfall/GameState/StarfallGameState.h"
+#include "Components/VerticalBox.h"
+#include "Components/TextBlock.h"
+#include "Components/UniformGridPanel.h"
+#include "Components/UniformGridSlot.h"
+
 
 
 void AStarfallPlayerController::BeginPlay()
@@ -95,7 +102,15 @@ void AStarfallPlayerController::OnPossess(APawn* InPawn)
 		SetHUDHealth(StarfallCharacter->GetHealth(), StarfallCharacter->GetMaxHealth());
 	}
 
-	
+	AStarfallPlayerController* StarfallPlayerController = IsValid(this) ? Cast<AStarfallPlayerController>(this) : nullptr;
+	if (StarfallPlayerController)
+	{
+		AStarfallCharacter* MyStarfallControlledCharacter = Cast<AStarfallCharacter>(StarfallPlayerController->GetPawn());
+		if (MyStarfallControlledCharacter)
+		{
+			MyStarfallControlledCharacter->SetUpPlayerInput();
+		}
+	}
 }
 
 void AStarfallPlayerController::SetHUDHealth(float Health, float MaxHealth)
@@ -300,15 +315,15 @@ void AStarfallPlayerController::PollInit()
 	}
 
 	
-		AStarfallPlayerController* StarfallPlayerController = IsValid(this) ? Cast<AStarfallPlayerController>(this) : nullptr;
-		if (StarfallPlayerController)
-		{
-			AStarfallCharacter* MyStarfallControlledCharacter = Cast<AStarfallCharacter>(StarfallPlayerController->GetPawn());
-			if (MyStarfallControlledCharacter)
-			{
-				MyStarfallControlledCharacter->SetUpPlayerInput();
-			}
-		}
+	//AStarfallPlayerController* StarfallPlayerController = IsValid(this) ? Cast<AStarfallPlayerController>(this) : nullptr;
+	//if (StarfallPlayerController)
+	//{
+	//	AStarfallCharacter* MyStarfallControlledCharacter = Cast<AStarfallCharacter>(StarfallPlayerController->GetPawn());
+	//	if (MyStarfallControlledCharacter)
+	//	{
+	//		MyStarfallControlledCharacter->SetUpPlayerInput();
+	//	}
+	//}
 	
 }
 
@@ -341,6 +356,8 @@ void AStarfallPlayerController::ReceivedPlayer()
 	{
 		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
 	}
+
+
 }
 
 void AStarfallPlayerController::OnMatchStateSet(FName State)
@@ -400,7 +417,42 @@ void AStarfallPlayerController::HandleCooldown()
 			StarfallHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
 			FString AnnouncementText("New Match Starts In:");
 			StarfallHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
-			StarfallHUD->Announcement->InfoText->SetText(FText());
+			
+			
+			AStarfallGameState* StarfallGameState = Cast<AStarfallGameState>(UGameplayStatics::GetGameState(this));
+			AStarfallPlayerState* StarfallPlayerState = GetPlayerState<AStarfallPlayerState>();
+			if (StarfallGameState && StarfallPlayerState)
+			{
+				TArray<AStarfallPlayerState*> TopPlayers = StarfallGameState->TopScoringPlayers;
+				FString InfoTextString;
+				if (TopPlayers.Num() == 0)
+				{
+					InfoTextString = FString("Legends were not born today.");
+				}
+				else if (TopPlayers.Num() == 1 && TopPlayers[0] == StarfallPlayerState)
+				{
+					InfoTextString = FString("Your deeds are known,\nyou are born a legend!");
+				}
+				else if (TopPlayers.Num() == 1)
+				{
+					InfoTextString = FString::Printf(TEXT("A legend was born: \n%s"), *TopPlayers[0]->GetPlayerName());
+				}
+				else if (TopPlayers.Num() > 1)
+				{
+					InfoTextString = FString("The legends that are born:\n");
+					for (auto TiedPlayer : TopPlayers)
+					{
+						InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
+						
+					}
+				}
+				UUniformGridSlot* GridSlot = StarfallHUD->Announcement->InfoTextGridBox->AddChildToUniformGrid(StarfallHUD->Announcement->InfoText);
+				GridSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Top);
+				GridSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+				StarfallHUD->Announcement->InfoText->SetText(FText::FromString(InfoTextString));
+			}
+
+			
 		}
 	}
 	AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(GetPawn());

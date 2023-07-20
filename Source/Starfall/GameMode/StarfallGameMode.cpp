@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "Starfall/PlayerState/StarfallPlayerState.h"
+#include "Starfall/GameState/StarfallGameState.h"
 
 namespace MatchState
 {
@@ -76,9 +77,12 @@ void AStarfallGameMode::PlayerEliminated(class AStarfallCharacter* ElimmedCharac
 	AStarfallPlayerState* AttackerPlayerState = AttackerController ? Cast<AStarfallPlayerState>(AttackerController->PlayerState) : nullptr;
 	AStarfallPlayerState* VictimPlayerState = VictimController ? Cast<AStarfallPlayerState>(VictimController->PlayerState) : nullptr;
 
-	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
+	AStarfallGameState* StarfallGameState = GetGameState<AStarfallGameState>();
+
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && StarfallGameState)
 	{
 		AttackerPlayerState->AddToScore(1.f);
+		StarfallGameState->UpdateTopScore(AttackerPlayerState);
 	}
 	if (VictimPlayerState)
 	{
