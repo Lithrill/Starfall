@@ -393,7 +393,7 @@ void AStarfallPlayerController::HandleMatchHasStarted()
 	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
 	if (StarfallHUD)
 	{
-		StarfallHUD->AddCharacterOverlay();
+		if (StarfallHUD->CharacterOverlay == nullptr) StarfallHUD->AddCharacterOverlay();
 		if (StarfallHUD->Announcement)
 		{
 			StarfallHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
