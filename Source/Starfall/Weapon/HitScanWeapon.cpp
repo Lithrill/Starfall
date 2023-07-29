@@ -49,6 +49,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 					StarfallCharacter->ImpactImpulseForce = WeaponImpactImpulseForce;
 					StarfallCharacter->ImpactDirection = WeaponImpactDirection;
 					StarfallCharacter->BoneImpactName = FireHit.BoneName;
+					StarfallCharacter->ImpactPoint = FireHit.ImpactPoint;
 
 					UGameplayStatics::ApplyDamage(
 						StarfallCharacter,

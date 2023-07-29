@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Starfall/Character/StarfallCharacter.h"
 
 AProjectileBullet::AProjectileBullet()
 {
@@ -21,6 +22,18 @@ void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		AController* OwnerController = OwnerCharacter->Controller;
 		if (OwnerController)
 		{
+
+			AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(OtherActor);
+			if (StarfallCharacter)
+			{
+				FVector ProjectileVelocity = GetVelocity();
+				FVector ProjectileImpactDirection = ProjectileVelocity.GetSafeNormal();
+
+				StarfallCharacter->ImpactImpulseForce = WeaponImpactImpulseForce;
+				StarfallCharacter->ImpactDirection = ProjectileImpactDirection;
+				StarfallCharacter->BoneImpactName = Hit.BoneName;
+				StarfallCharacter->ImpactPoint = Hit.ImpactPoint;
+			}
 			UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
 		}
 	}
