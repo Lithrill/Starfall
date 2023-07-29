@@ -31,6 +31,8 @@
 
 
 
+
+
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
 {
@@ -127,12 +129,33 @@ void AStarfallCharacter::Elim()
 		ElimDelay
 	);
 
+
+	//Ragdoll the player
+
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->SetComponentTickEnabled(false);
+
+	// Disable capsule collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->WakeAllRigidBodies();
+
+	bool bImpactSettings = (ImpactDirection == FVector::ZeroVector && ImpactPoint == FVector::ZeroVector && BoneImpactName == FName() && ImpactImpulseForce == 0.f);
+	if (!bImpactSettings)
+	{
+		GetMesh()->AddImpulseAtLocation(ImpactDirection * ImpactImpulseForce, ImpactPoint, BoneImpactName);
+	}
+	
 }
 
 void AStarfallCharacter::Destroy()
 {
 	AStarfallGameMode* StarfallGameMode = Cast<AStarfallGameMode>(UGameplayStatics::GetGameMode(this));
-	bool bMatchNotInProgress = StarfallGameMode->GetMatchState() != MatchState::InProgress;
+	bool bMatchNotInProgress = (StarfallGameMode->GetMatchState() != MatchState::InProgress);
 
 	if (Combat && Combat->EquippedWeapon && bMatchNotInProgress)
 	{
@@ -156,9 +179,14 @@ void AStarfallCharacter::MulticastElim_Implementation()
 	if (StarfallPlayerController)
 	{
 		StarfallPlayerController->SetHUDWeaponAmmo(0);
+		StarfallPlayerController->SetHUDCarriedAmmo(0);
+		
 	}
 	bElimmed = true;
-	PlayElimMontage();
+	//PlayElimMontage();
+
+	
+	
 
 	// Start dissolve effect
 
@@ -173,10 +201,8 @@ void AStarfallCharacter::MulticastElim_Implementation()
 	}
 	StartDissolve();
 
-	// Disable Character movemenet
 
-	GetCharacterMovement()->DisableMovement();
-	GetCharacterMovement()->StopMovementImmediately();
+	
 	bDisableGameplay = true;
 	if (Combat)
 	{
@@ -313,6 +339,12 @@ void AStarfallCharacter::PlayReloadMontage()
 			SectionName = FName("Rifle");
 			break;
 		case EWeaponType::EWT_RocketLauncher:
+			SectionName = FName("Rifle");
+			break;
+		case EWeaponType::EWT_GalacticCrocketLauncher:
+			SectionName = FName("Rifle");
+			break;
+		case EWeaponType::EWT_Pistol:
 			SectionName = FName("Rifle");
 			break;
 		}

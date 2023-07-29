@@ -55,6 +55,16 @@ public:
 	UPROPERTY(Replicated)
 	bool bDisableGameplay = false;
 
+	//Setting Ragdoll impact characteristics
+	UPROPERTY()
+	float ImpactImpulseForce;
+	UPROPERTY()
+	FVector ImpactDirection;
+	UPROPERTY()
+	FVector ImpactPoint;
+	UPROPERTY()
+	FName BoneImpactName;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
