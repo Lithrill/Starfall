@@ -65,6 +65,17 @@ public:
 	UPROPERTY()
 	FName BoneImpactName;
 
+	//Rocket characteristics
+
+	UPROPERTY()
+	float ExplosionRadius;
+
+	UPROPERTY()
+	FVector ExplosionPoint;
+
+	UPROPERTY()
+	float ExplosionForce;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -50,4 +50,16 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float DestroyTime = 3.f;
+
+	UPROPERTY(EditAnywhere)
+	float DamageInnerRadius = 200.f;
+
+	UPROPERTY(EditAnywhere)
+	float DamageOuterRadius = 1400.f;
+
+	UPROPERTY(EditAnywhere)
+	float DamageFalloff = 1.25f;
+
+	UPROPERTY(EditAnywhere)
+	float ExplosionImpactImpulseForce = 0.f;
 };

@@ -144,6 +144,12 @@ void AStarfallCharacter::Elim()
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->WakeAllRigidBodies();
 
+	bool bExplosionImpactSettings = (ExplosionPoint == FVector::ZeroVector && ExplosionForce == 0.f && ExplosionRadius == 0.f);
+	if (!bExplosionImpactSettings)
+	{
+		GetMesh()->AddRadialImpulse(ExplosionPoint, ExplosionRadius, ExplosionForce, ERadialImpulseFalloff::RIF_Linear);
+	}
+
 	bool bImpactSettings = (ImpactDirection == FVector::ZeroVector && ImpactPoint == FVector::ZeroVector && BoneImpactName == FName() && ImpactImpulseForce == 0.f);
 	if (!bImpactSettings)
 	{
@@ -213,34 +219,34 @@ void AStarfallCharacter::MulticastElim_Implementation()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//Spawn in ElimVehicleObject
-	if (ElimVehicleToSpawn)
-	{
-		UWorld* World = GetWorld();
-		if (World == nullptr)
-		{
-			return;
-		}
+	//if (ElimVehicleToSpawn)
+	//{
+	//	UWorld* World = GetWorld();
+	//	if (World == nullptr)
+	//	{
+	//		return;
+	//	}
 
-		FActorSpawnParameters SpawnParams;
-		
+	//	FActorSpawnParameters SpawnParams;
+	//	
 
-		FVector SpawnCustomProperties;
+	//	FVector SpawnCustomProperties;
 
-		//SpawnCustomProperties.X = -1000.f;
-		//SpawnCustomProperties.Y = -6000.f;
-		SpawnCustomProperties.Z = 500.f;
+	//	//SpawnCustomProperties.X = -1000.f;
+	//	//SpawnCustomProperties.Y = -6000.f;
+	//	SpawnCustomProperties.Z = 500.f;
 
-		FVector SpawnLocation = GetActorLocation()  + SpawnCustomProperties + (GetActorForwardVector() * -5000); // Offset from character forward direction
-		FRotator SpawnRotation = GetActorRotation();
+	//	FVector SpawnLocation = GetActorLocation()  + SpawnCustomProperties + (GetActorForwardVector() * -5000); // Offset from character forward direction
+	//	FRotator SpawnRotation = GetActorRotation();
 
-		
-		World->SpawnActor<AHumanElimAnimation>(ElimVehicleToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+	//	
+	//	World->SpawnActor<AHumanElimAnimation>(ElimVehicleToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 
-		if (ElimVehicleToSpawn != nullptr)
-		{
-			// Do something with the new object
-		}
-	}
+	//	if (ElimVehicleToSpawn != nullptr)
+	//	{
+	//		// Do something with the new object
+	//	}
+	//}
 }
 
 void AStarfallCharacter::ElimTimerFinished()
@@ -405,6 +411,7 @@ void AStarfallCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const
 	UpdateHUDHealth();
 	PlayHitReactMontage();
 
+
 	if (Health == 0.f)
 	{
 		AStarfallGameMode* StarfallGameMode = GetWorld()->GetAuthGameMode<AStarfallGameMode>();
@@ -415,6 +422,8 @@ void AStarfallCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const
 			StarfallGameMode->PlayerEliminated(this, StarfallPlayerController, AttackerController);
 		}
 	}
+
+	
 }
 
 void AStarfallCharacter::Move(const FInputActionValue& Value)
