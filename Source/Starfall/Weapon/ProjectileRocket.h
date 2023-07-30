@@ -72,6 +72,6 @@ private:
 	float ExplosionImpactImpulseForce = 100000.f;
 
 	UPROPERTY(EditAnywhere)
-	float MaxLaunchSpeed = 100000.f;
+	float MaxLaunchSpeed = 7000.f;
 	
 };
