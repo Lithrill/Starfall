@@ -13,6 +13,10 @@
 #include "Starfall/Character/StarfallCharacter.h"
 #include "Weapon.h"
 #include "CollisionQueryParams.h"
+#include "PhysicsEngine/RadialForceComponent.h"
+#include "Components/SphereComponent.h"
+#include "RocketRadialForce.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AProjectileRocket::AProjectileRocket()
 {
@@ -23,6 +27,11 @@ AProjectileRocket::AProjectileRocket()
 	RocketMovementComponent = CreateDefaultSubobject<URocketMovementComponent>(TEXT("RocketMovementComponent"));
 	RocketMovementComponent->bRotationFollowsVelocity = true;
 	RocketMovementComponent->SetIsReplicated(true);
+
+	PrimaryActorTick.bCanEverTick = false;
+
+
+	
 }
 
 
@@ -34,6 +43,7 @@ void AProjectileRocket::BeginPlay()
 	if (!HasAuthority())
 	{
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileRocket::OnHit);
+		
 	}
 
 	if (TrailSystem)
@@ -98,6 +108,7 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 			TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 			ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
 			ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+			ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel1));
 
 
 			// Perform a capsule trace for each character in the level
@@ -153,7 +164,27 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 									StarfallCharacter->ExplosionForce = ExplosionImpactImpulseForce;
 									StarfallCharacter->ExplosionPoint = GetActorLocation();
 
-									StarfallCharacter->GetMesh()->AddRadialImpulse(GetActorLocation(), DamageOuterRadius, ExplosionImpactImpulseForce, ERadialImpulseFalloff::RIF_Linear);
+									
+
+									UCharacterMovementComponent* StarfallCharacterMovement = StarfallCharacter->GetCharacterMovement();
+									if (StarfallCharacterMovement)
+									{
+										UE_LOG(LogTemp, Error, TEXT("This has been accessed"));
+										FVector NormalizedLaunchDirection = (StarfallCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+
+
+										float DistanceFromExplosionCenter = FVector::Distance(StarfallCharacter->GetActorLocation(), GetActorLocation());
+										float FalloffRatio = FMath::Clamp(abs(DistanceFromExplosionCenter - DamageOuterRadius) / DamageOuterRadius, 0.f, 1.f);
+
+										float LaunchSpeed = MaxLaunchSpeed * (1.f - FalloffRatio);
+										FVector LaunchVelocity = NormalizedLaunchDirection * LaunchSpeed;
+
+
+										//StarfallCharacter->RocketForceDirection = LaunchVelocity;
+										//StarfallCharacter->bRocketForce = true;
+										StarfallCharacterMovement->Launch(LaunchVelocity);
+									}
+
 								}
 								
 							}
@@ -208,8 +239,26 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 					TArray<AActor*>(), // IgnoreActors
 					this, // DamageCauser
 					FiringController, // InstigatorController
-					ECC_GameTraceChannel2
+					ECC_GameTraceChannel2 // Channel to ignore
 				);
+
+				//UWorld* World = GetWorld();
+
+				//if (World)
+				//{
+				//	FVector SpawnLocation = GetActorLocation();
+				//	FRotator SpawnRotation = GetActorRotation();
+
+				//	ARocketRadialForce* RadialForce = World->SpawnActor<ARocketRadialForce>(RadialForceClass, SpawnLocation, SpawnRotation);
+
+				//	if (RadialForce)
+				//	{
+				//		//UE_LOG(LogTemp, Warning, TEXT("Warning it has spawned"));
+				//		RadialForce->RadialImpactImpulseForce = ExplosionImpactImpulseForce;
+				//		RadialForce->RadialOuterRadius = DamageOuterRadius;
+				//		RadialForce->RadialForceStrenght = ExplosionImpactForceStrength;
+				//	}
+				//}
 			}
 		}
 	}

@@ -17,6 +17,13 @@ class STARFALL_API AProjectileRocket : public AProjectile
 public:
 	AProjectileRocket();
 	virtual void Destroyed() override;
+
+
+	/*UPROPERTY(EditAnywhere, Category = Impulse)
+	TSubclassOf<class ARocketRadialForce> RadialForceObject;*/
+
+	UPROPERTY(EditAnywhere, Category = Impulse)
+	TSubclassOf<class ARocketRadialForce> RadialForceClass;
 	
 protected:
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
@@ -40,7 +47,8 @@ protected:
 
 	UPROPERTY(visibleAnywhere)
 	class URocketMovementComponent* RocketMovementComponent;
-
+	
+	
 private:
 
 	UPROPERTY(VisibleAnywhere)
@@ -61,5 +69,9 @@ private:
 	float DamageFalloff = 1.25f;
 
 	UPROPERTY(EditAnywhere)
-	float ExplosionImpactImpulseForce = 0.f;
+	float ExplosionImpactImpulseForce = 100000.f;
+
+	UPROPERTY(EditAnywhere)
+	float MaxLaunchSpeed = 100000.f;
+	
 };

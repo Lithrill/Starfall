@@ -76,6 +76,16 @@ public:
 	UPROPERTY()
 	float ExplosionForce;
 
+
+	//RocketJumping
+
+	UPROPERTY()
+	bool bRocketForce = false;
+
+	UPROPERTY()
+	FVector	RocketForceDirection;
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -126,6 +136,7 @@ protected:
 	void ScoreReleased();
 	void ReloadPressed();
 	
+	void RocketJump();
 
 	void PlayHitReactMontage();
 
