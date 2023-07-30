@@ -17,6 +17,7 @@
 #include "Components/SphereComponent.h"
 #include "RocketRadialForce.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "DrawDebugHelpers.h"
 
 AProjectileRocket::AProjectileRocket()
 {
@@ -151,20 +152,39 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 						{
 							// Perform a line trace from the explosion origin to the hit actor's location
 							FHitResult LineTraceHit;
-							FVector EndLocation = HitResult.Location; // Use the hit actor's location as the end location of the line trace
+							FVector EndLocation = StarfallCharacter->GetActorLocation(); // Use the hit actor's location as the end location of the line trace
 							FCollisionQueryParams LineTraceParams;
+							 
+							
+
 							LineTraceParams.AddIgnoredActor(this); // Ignore the projectile actor itself
+							GetWorld()->LineTraceSingleByChannel(LineTraceHit, GetActorLocation(), EndLocation, ECC_Visibility, LineTraceParams);
 
+						/*	DrawDebugLine(
+								GetWorld(),
+								GetActorLocation(),
+								EndLocation,
+								FColor::Red,
+								false, 100.f, 0,
+								50.f
+							);*/
 
-							if (!GetWorld()->LineTraceSingleByChannel(LineTraceHit, GetActorLocation(), EndLocation, ECC_GameTraceChannel2, LineTraceParams))
+							// Check if the line trace hits something
+							if (LineTraceHit.GetActor() && LineTraceHit.GetActor() != StarfallCharacter)
 							{
+
+							}
+							else
+							{
+								
+
 								if (StarfallCharacter)
 								{
 									StarfallCharacter->ExplosionRadius = DamageOuterRadius;
 									StarfallCharacter->ExplosionForce = ExplosionImpactImpulseForce;
 									StarfallCharacter->ExplosionPoint = GetActorLocation();
 
-									
+
 
 									UCharacterMovementComponent* StarfallCharacterMovement = StarfallCharacter->GetCharacterMovement();
 									if (StarfallCharacterMovement)
@@ -188,6 +208,11 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 								}
 								
 							}
+
+										
+								
+							
+							
 						}
 					}
 					if (Weapon && !WeaponActors.Contains(Weapon))
@@ -207,17 +232,25 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 						{
 							// Perform a line trace from the explosion origin to the hit actor's location
 							FHitResult LineTraceHit;
-							FVector EndLocation = HitResult.Location; // Use the hit actor's location as the end location of the line trace
+							FVector EndLocation = Weapon->GetActorLocation(); // Use the hit actor's location as the end location of the line trace
 							FCollisionQueryParams LineTraceParams;
 							LineTraceParams.AddIgnoredActor(this); // Ignore the projectile actor itself
+							//LineTraceParams.AddIgnoredActor(ECollisionChannel::ECC_GameTraceChannel2);
 
-
-							if (!GetWorld()->LineTraceSingleByChannel(LineTraceHit, GetActorLocation(), EndLocation, ECC_GameTraceChannel2, LineTraceParams))
+							if (GetWorld()->LineTraceSingleByChannel(LineTraceHit, GetActorLocation(), EndLocation, ECC_Visibility, LineTraceParams))
 							{
-								if (Weapon)
+								if (LineTraceHit.GetActor() && LineTraceHit.GetActor() != Weapon)
 								{
-									Weapon->GetWeaponMesh()->AddRadialImpulse(GetActorLocation(), DamageOuterRadius, ExplosionImpactImpulseForce, ERadialImpulseFalloff::RIF_Linear);
+
 								}
+								else
+								{
+									if (Weapon)
+									{
+										Weapon->GetWeaponMesh()->AddRadialImpulse(GetActorLocation(), DamageOuterRadius, ExplosionImpactImpulseForce, ERadialImpulseFalloff::RIF_Linear);
+									}
+								}
+								
 							}
 						}
 					}
