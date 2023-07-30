@@ -411,7 +411,7 @@ void AStarfallCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const
 	UpdateHUDHealth();
 	PlayHitReactMontage();
 
-	//RocketJump();
+	
 	
 	if (Health == 0.f)
 	{
@@ -427,19 +427,6 @@ void AStarfallCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const
 	
 }
 
-void AStarfallCharacter::RocketJump()
-{
-	if (bRocketForce && (RocketForceDirection != FVector::ZeroVector) && HasAuthority())
-	{
-		LaunchCharacter(RocketForceDirection, true, true);
-		UE_LOG(LogTemp, Error, TEXT("Bruh moments"));
-		bRocketForce = false;
-	}
-	else
-	{
-		bRocketForce = false;
-	}
-}
 
 void AStarfallCharacter::Move(const FInputActionValue& Value)
 {

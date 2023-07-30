@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Starfall/Character/StarfallCharacter.h"
+#include "Weapon.h"
 
 AProjectileBullet::AProjectileBullet()
 {
@@ -35,6 +36,14 @@ void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 				StarfallCharacter->ImpactPoint = Hit.ImpactPoint;
 			}
 			UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
+
+			AWeapon* StarfallWeapon = Cast<AWeapon>(OtherActor);
+			if (StarfallWeapon)
+			{
+				FVector ProjectileVelocity = GetVelocity();
+				FVector ProjectileImpactDirection = ProjectileVelocity.GetSafeNormal();
+				StarfallWeapon->GetWeaponMesh()->AddImpulseAtLocation(ProjectileImpactDirection * WeaponImpactImpulseForce, Hit.ImpactPoint, Hit.BoneName);
+			}
 		}
 	}
 	

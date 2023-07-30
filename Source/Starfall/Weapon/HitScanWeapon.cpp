@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Weapon.h"
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
 {
@@ -62,6 +63,19 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 					
 				}
 			}
+
+			AWeapon* StarfallWeapon = Cast<AWeapon>(FireHit.GetActor());
+			{
+				if (StarfallWeapon && HasAuthority())
+				{
+					FVector WeaponImpactDirection = (End - Start).GetSafeNormal();
+					FVector ImpactPoint = FireHit.ImpactPoint;
+
+					StarfallWeapon->GetWeaponMesh()->AddImpulseAtLocation(WeaponImpactDirection * WeaponImpactImpulseForce, FireHit.ImpactPoint, FireHit.BoneName);
+				}
+			}
+
+
 			if (ImpactParticles)
 			{
 				FTransform SpawnTransform = GetActorTransform();
