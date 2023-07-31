@@ -89,6 +89,11 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	{
 		return;
 	}
+
+	if (OtherComp && OtherComp->GetCollisionObjectType() == ECC_GameTraceChannel3)
+	{
+		return;
+	}
 	APawn* FiringPawn = GetInstigator();
 	if (FiringPawn && HasAuthority())
 	{
@@ -158,7 +163,7 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 							
 
 							LineTraceParams.AddIgnoredActor(this); // Ignore the projectile actor itself
-							GetWorld()->LineTraceSingleByChannel(LineTraceHit, GetActorLocation(), EndLocation, ECC_Visibility, LineTraceParams);
+							GetWorld()->LineTraceSingleByChannel(LineTraceHit, GetActorLocation(), EndLocation, ECC_EngineTraceChannel2, LineTraceParams);
 
 						/*	DrawDebugLine(
 								GetWorld(),
