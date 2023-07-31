@@ -12,6 +12,8 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Starfall/PlayerController/StarfallPlayerController.h"
 
+
+
 // Sets default values
 AWeapon::AWeapon()
 {
@@ -78,19 +80,46 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(OtherActor);
-	if (StarfallCharacter && PickupWidget)
+	
+	if (StarfallCharacter)
 	{
-		StarfallCharacter->SetOVerlappingWeapon(this);
+		AController* StarfallPlayerController = StarfallCharacter->GetController();
+		if (StarfallCharacter && PickupWidget && StarfallPlayerController)
+		{
+			//switch (StarfallPlayerController->GetInputMode())
+			//{
+			//case EInputMode::Gamepad: // Assuming EInputMode::Gamepad represents the gamepad input mode
+			//	 The player is using a controller (gamepad)
+			//	HandleControllerInput();
+			//	break;
+			//case EInputMode::Keyboard: // Assuming EInputMode::Keyboard represents the keyboard input mode
+			//	 The player is using a keyboard or some other input device
+			//	HandleKeyboardInput();
+			//	break;
+			//default:
+			//	 Handle other input modes if necessary
+			//	break;
+			//}
+			StarfallCharacter->SetOVerlappingWeapon(this);
+		}
 	}
+
+	
 }
 
 void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(OtherActor);
-	if (StarfallCharacter && PickupWidget)
+	if (StarfallCharacter)
 	{
-		StarfallCharacter->SetOVerlappingWeapon(nullptr);
+		AController* StarfallPlayerController = StarfallCharacter->GetController();
+		if (StarfallCharacter && PickupWidget && StarfallPlayerController)
+		{
+			
+			StarfallCharacter->SetOVerlappingWeapon(nullptr);
+		}
 	}
+	
 }
 
 void AWeapon::SetHUDAmmo()

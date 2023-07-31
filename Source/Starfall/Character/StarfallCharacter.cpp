@@ -33,6 +33,7 @@
 
 
 
+
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
 {
@@ -304,6 +305,11 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Completed, this, &AStarfallCharacter::ScoreReleased);
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::ReloadPressed);
 	}
+}
+
+void AStarfallCharacter::CheckCurrentInputMode()
+{
+	
 }
 
 void AStarfallCharacter::PostInitializeComponents()

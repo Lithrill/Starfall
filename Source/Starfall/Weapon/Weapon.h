@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "WeaponTypes.h"
+#include "Starfall/StarfallTypes/ControllerInputState.h"
 #include "Weapon.generated.h"
+
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -136,6 +138,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
+
+	UPROPERTY()
+	EControllerInputState ControllerInputState;
 
 public:	
 	void SetWeaponState(EWeaponState State);

@@ -9,6 +9,7 @@
 #include "Starfall/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
 #include "Starfall/StarfallTypes/CombatState.h"
+#include "Starfall/StarfallTypes/ControllerInputState.h"
 #include "StarfallCharacter.generated.h"
 
 class UInputMappingContext;
@@ -119,6 +120,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* ReloadAction;
+
+	void CheckCurrentInputMode();
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -265,6 +268,7 @@ private:
 
 	UPROPERTY()
 	class AStarfallPlayerState* StarfallPlayerState;
+
 public:	
 	void SetOVerlappingWeapon(AWeapon* Weapon);
 
