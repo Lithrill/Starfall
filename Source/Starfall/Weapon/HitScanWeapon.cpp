@@ -8,6 +8,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Weapon.h"
+#include "Starfall/Environment/WindowColourChanger.h"
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
 {
@@ -26,6 +27,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 
 
 		FHitResult FireHit;
+		FHitResult WindowHit;
 		UWorld* World = GetWorld();
 		if (World)
 		{
@@ -36,8 +38,29 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				ECollisionChannel::ECC_Visibility
 			);
 		}
+		if (World)
+		{
+			World->LineTraceSingleByChannel(
+				WindowHit,
+				Start,
+				End,
+				ECollisionChannel::ECC_GameTraceChannel3
+			);
+		}
+
+		if (WindowHit.bBlockingHit)
+		{
+			AWindowColourChanger* WindowActor = Cast<AWindowColourChanger>(WindowHit.GetActor());
+			if (WindowActor)
+			{
+				WindowActor->ChangeWindowColour();
+			}
+		}
+
 		if (FireHit.bBlockingHit)
 		{
+			
+
 			AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(FireHit.GetActor());
 			if (StarfallCharacter)
 			{

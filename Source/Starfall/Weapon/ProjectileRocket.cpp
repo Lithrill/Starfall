@@ -177,7 +177,7 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 							// Check if the line trace hits something
 							if (LineTraceHit.GetActor() && LineTraceHit.GetActor() != StarfallCharacter)
 							{
-
+								
 							}
 							else
 							{

@@ -21,4 +21,6 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float WeaponImpactImpulseForce = 0.f;
+
+
 };
