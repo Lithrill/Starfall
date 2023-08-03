@@ -280,7 +280,7 @@ private:
 	UPROPERTY()
 	class AStarfallPlayerState* StarfallPlayerState;
 
-
+	virtual void PossessedBy(AController* NewController) override;
 	
 public:	
 	

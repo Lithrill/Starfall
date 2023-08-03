@@ -93,6 +93,8 @@ void UCombatComponent::Fire()
 			CrosshairShootingFactor += 0.75f;
 		}
 		StartFireTimer();
+		
+
 	}
 	
 }
@@ -100,6 +102,7 @@ void UCombatComponent::Fire()
 void UCombatComponent::StartFireTimer()
 {
 	if (EquippedWeapon == nullptr || Character == nullptr) return;
+	UE_LOG(LogTemp, Error, TEXT("StartedFiretimer"));
 	Character->GetWorldTimerManager().SetTimer(
 		FireTimer,
 		this,
@@ -114,6 +117,7 @@ void UCombatComponent::FireTimerFinished()
 	bCanFire = true;
 	if (bFireButtonPressed && EquippedWeapon->bAutomatic)
 	{
+		UE_LOG(LogTemp, Error, TEXT("FiringAgain"));
 		Fire();
 	}
 	if (EquippedWeapon->IsEmpty())

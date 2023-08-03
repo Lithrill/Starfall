@@ -154,8 +154,8 @@ private:
 	UPROPERTY()
 	class AController* SpecificPlayerController;
 
-	UFUNCTION(Server, Reliable)
-	void ControllerKeyboardChecker(AController* SpecController, UWidgetComponent* PickUidget, UPickUpWidget* PickClass, EControllerInputState CurrentutState);
+	/*UFUNCTION(Server, Reliable)
+	void ControllerKeyboardChecker(AController* SpecController, UWidgetComponent* PickUidget, UPickUpWidget* PickClass, EControllerInputState CurrentutState);*/
 
 public:	
 	void SetWeaponState(EWeaponState State);

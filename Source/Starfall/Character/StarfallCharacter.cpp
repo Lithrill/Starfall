@@ -97,6 +97,16 @@ void AStarfallCharacter::BeginPlay()
 		OnTakeAnyDamage.AddDynamic(this, &AStarfallCharacter::ReceiveDamage);
 	}
 
+	if (!HasAuthority())
+	{
+		SetUpPlayerInput();
+	}
+	
+}
+
+void AStarfallCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
 
 	SetUpPlayerInput();
 }
@@ -308,7 +318,7 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Crouch);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Aim);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AStarfallCharacter::AimEnd);
-		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::FirePressed);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AStarfallCharacter::FirePressed);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AStarfallCharacter::FireReleased);
 		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::ScorePressed);
 		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Completed, this, &AStarfallCharacter::ScoreReleased);

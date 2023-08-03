@@ -24,7 +24,7 @@ private:
 	class UNiagaraSystem* ImpactParticles;
 
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* Tracer;
+	class UNiagaraSystem* BeamParticles;
 
 	UPROPERTY(EditAnywhere)
 	float WeaponImpactImpulseForce = 0.f;

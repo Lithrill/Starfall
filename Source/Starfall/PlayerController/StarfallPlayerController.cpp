@@ -102,15 +102,15 @@ void AStarfallPlayerController::OnPossess(APawn* InPawn)
 		SetHUDHealth(StarfallCharacter->GetHealth(), StarfallCharacter->GetMaxHealth());
 	}
 
-	AStarfallPlayerController* StarfallPlayerController = IsValid(this) ? Cast<AStarfallPlayerController>(this) : nullptr;
-	if (StarfallPlayerController)
-	{
-		AStarfallCharacter* MyStarfallControlledCharacter = Cast<AStarfallCharacter>(StarfallPlayerController->GetPawn());
-		if (MyStarfallControlledCharacter)
-		{
-			MyStarfallControlledCharacter->SetUpPlayerInput();
-		}
-	}
+	//AStarfallPlayerController* StarfallPlayerController = IsValid(this) ? Cast<AStarfallPlayerController>(this) : nullptr;
+	//if (StarfallPlayerController)
+	//{
+	//	AStarfallCharacter* MyStarfallControlledCharacter = Cast<AStarfallCharacter>(StarfallPlayerController->GetPawn());
+	//	if (MyStarfallControlledCharacter)
+	//	{
+	//		MyStarfallControlledCharacter->SetUpPlayerInput();
+	//	}
+	//}
 }
 
 void AStarfallPlayerController::SetHUDHealth(float Health, float MaxHealth)
