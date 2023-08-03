@@ -19,6 +19,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
 
+
 AProjectileRocket::AProjectileRocket()
 {
 	RocketMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rocket Mesh"));
@@ -30,6 +31,7 @@ AProjectileRocket::AProjectileRocket()
 	RocketMovementComponent->SetIsReplicated(true);
 
 	PrimaryActorTick.bCanEverTick = false;
+
 
 
 	
@@ -94,16 +96,23 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	{
 		return;
 	}
+
+
 	APawn* FiringPawn = GetInstigator();
 	if (FiringPawn && HasAuthority())
 	{
+
+
 		AController* FiringController = FiringPawn->GetController();
 		if (FiringController)
 		{
+			
+			
 			//Apply Directional Impulse 
 
 			bool bTraceComplex = false; // Set this to true if you want precise collision checks
 			TArray<AStarfallCharacter*> StarfallCharacters;
+			TArray<AActor*> ActorsRefs;
 			TArray<AWeapon*> WeaponActors;
 			//TSet<AStarfallCharacter*> StarfallCharacters;
 
@@ -140,6 +149,31 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 					AActor* AffectedActor = HitResult.GetActor();
 					AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(AffectedActor);
 					AWeapon* Weapon = Cast<AWeapon>(AffectedActor);
+					//if (!StarfallCharacter && !Weapon)
+					//{
+					//	//SetChaosDamage && change gravity property
+					//	bool bIsDuplicate = false;
+					//	for (AActor* ExistingAffectedActor : ActorsRefs)
+					//	{
+					//		if (ExistingAffectedActor == AffectedActor && ExistingAffectedActor != Weapon && ExistingAffectedActor != StarfallCharacter)
+					//		{
+					//			bIsDuplicate = true;
+					//			break;
+					//		}
+					//	}
+					//	if (!bIsDuplicate)
+					//	{
+					//		UPrimitiveComponent* ActorRootComponent = AffectedActor->FindComponentByClass<UPrimitiveComponent>();
+					//		if (ActorRootComponent)
+					//		{
+					//			ActorRootComponent->SetSimulatePhysics(true);
+					//			ActorRootComponent->SetEnableGravity(true);
+					//			UE_LOG(LogTemp, Error, TEXT("Gravity switched on"));
+					//		}
+					//		
+					//	}
+					//}
+
 					if (StarfallCharacter && !StarfallCharacters.Contains(StarfallCharacter))
 					{
 						// Check if DamagedActor is already in the DamagedActors array
@@ -280,23 +314,13 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 					ECC_GameTraceChannel2 // Channel to ignore
 				);
 
-				//UWorld* World = GetWorld();
+				ExplosionFieldSystem = GetWorld()->SpawnActor<UBlueprint>(GetActorLocation(), GetActorRotation());
+				if (ExplosionFieldSystem)
+				{
+					// Optionally, you can do something with the spawned object, such as set its properties or add it to an array for future reference.
+				}
 
-				//if (World)
-				//{
-				//	FVector SpawnLocation = GetActorLocation();
-				//	FRotator SpawnRotation = GetActorRotation();
 
-				//	ARocketRadialForce* RadialForce = World->SpawnActor<ARocketRadialForce>(RadialForceClass, SpawnLocation, SpawnRotation);
-
-				//	if (RadialForce)
-				//	{
-				//		//UE_LOG(LogTemp, Warning, TEXT("Warning it has spawned"));
-				//		RadialForce->RadialImpactImpulseForce = ExplosionImpactImpulseForce;
-				//		RadialForce->RadialOuterRadius = DamageOuterRadius;
-				//		RadialForce->RadialForceStrenght = ExplosionImpactForceStrength;
-				//	}
-				//}
 			}
 		}
 	}

@@ -74,4 +74,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	float MaxLaunchSpeed = 7000.f;
 	
+	UPROPERTY(EditAnywhere, Category = "ExplosionChaosField")
+	UBlueprint* ExplosionFieldSystem;
+
 };
