@@ -36,6 +36,11 @@ public:
 	void Dropped();
 	void AddAmmo(int32 AmmoToAdd);
 
+	UPROPERTY()
+	class UPickUpWidget* PickUpWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	class UWidgetComponent* PickupWidget;
 
 	/**
 	* Textures for the weapon Crosshairs
@@ -71,10 +76,10 @@ public:
 	*/
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-		float FireDelay = .15f;
+	float FireDelay = .15f;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-		bool bAutomatic = true;
+	bool bAutomatic = true;
 
 protected:
 	
@@ -111,8 +116,7 @@ private:
 	UFUNCTION()
 	void OnRep_WeaponState();
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	class UWidgetComponent* PickupWidget;
+	
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class UAnimationAsset* FireAnimation;
@@ -140,7 +144,18 @@ private:
 	EWeaponType WeaponType;
 
 	UPROPERTY()
-	EControllerInputState ControllerInputState;
+	EControllerInputState CurrentControllerInputState;
+
+	
+
+	UPROPERTY()
+	class AStarfallCharacter* StarfallCharacterPTR;
+
+	UPROPERTY()
+	class AController* SpecificPlayerController;
+
+	UFUNCTION(Server, Reliable)
+	void ControllerKeyboardChecker(AController* SpecController, UWidgetComponent* PickUidget, UPickUpWidget* PickClass, EControllerInputState CurrentutState);
 
 public:	
 	void SetWeaponState(EWeaponState State);

@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Starfall/StarfallTypes/ControllerInputState.h"
 #include "Components/WidgetComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Starfall/Weapon/Weapon.h"
@@ -28,7 +29,8 @@
 #include "Starfall/Weapon/WeaponTypes.h"
 #include "Starfall/GameMode/StarfallGameMode.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "InputCoreTypes.h"
+#include "Starfall/HUD/PickUpWidget.h"
 
 
 
@@ -172,13 +174,20 @@ void AStarfallCharacter::Destroy()
 
 void AStarfallCharacter::SetUpPlayerInput()
 {
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	if (AStarfallPlayerController* PlayerController = Cast<AStarfallPlayerController>(GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(StarfallCharacterMappingContext, 0);
 		}
+
+		if (PlayerController)
+		{
+			ThisPlayerController = PlayerController;
+		}
 	}
+	AStarfallPlayerController* MyPlayerController = IsValid(this) ? Cast<AStarfallPlayerController>(this->GetController()) : nullptr;
+	//ThisPlayerController = MyPlayerController;
 }
 
 void AStarfallCharacter::MulticastElim_Implementation()
@@ -307,10 +316,51 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	}
 }
 
-void AStarfallCharacter::CheckCurrentInputMode()
+void  AStarfallCharacter::ClientCheckCurrentInputMode()
 {
-	
+	if (ThisPlayerController)
+	{
+
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisPlayerController->GetLocalPlayer()))
+		{
+			TArray<FKey> QueryKeys = Subsystem->QueryKeysMappedToAction(PlayerActions);
+			for (FKey key : QueryKeys)
+			{
+				if (key.IsGamepadKey())
+				{
+					if (ThisPlayerController->IsInputKeyDown(EKeys::A))
+					{
+
+						PlayerInputState = EControllerInputState::ECIS_Keyboard;
+						//IsUsingKeyBoard = true;
+						//IsUsingController = false;
+					}
+					else if (ThisPlayerController->IsInputKeyDown(EKeys::W))
+					{
+
+						PlayerInputState = EControllerInputState::ECIS_Keyboard;
+						//UE_LOG(LogTemp, Warning, TEXT("keyboard"));
+						//UE_LOG(LogTemp, Warning, TEXT("PlayerInputState: %s"), *UEnum::GetValueAsString(PlayerInputState));
+					}
+					else if (ThisPlayerController->IsInputKeyDown(EKeys::Gamepad_LeftStick_Up))
+					{
+
+						PlayerInputState = EControllerInputState::ECIS_Controller;
+						//UE_LOG(LogTemp, Warning, TEXT("Gamepad"));
+						//UE_LOG(LogTemp, Warning, TEXT("PlayerInputState: %s"), *UEnum::GetValueAsString(PlayerInputState));
+					}
+				}
+				else if (key.IsMouseButton())
+				{
+					//UE_LOG(LogTemp, Warning, TEXT("Is Mouse input"));
+					//UE_LOG(LogTemp, Warning, TEXT("PlayerInputState: %s"), *UEnum::GetValueAsString(PlayerInputState));
+				}
+			}
+		}
+	}
 }
+
+
 
 void AStarfallCharacter::PostInitializeComponents()
 {
@@ -437,6 +487,8 @@ void AStarfallCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const
 void AStarfallCharacter::Move(const FInputActionValue& Value)
 {
 	if (bDisableGameplay) return;
+	PlayerActions = MoveAction;
+	ClientCheckCurrentInputMode();
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	const FRotator Rotation = Controller->GetControlRotation();
@@ -447,19 +499,25 @@ void AStarfallCharacter::Move(const FInputActionValue& Value)
 
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 	AddMovementInput(RightDirection, MovementVector.X);
+	
 }
 void AStarfallCharacter::Look(const FInputActionValue& Value)
 {
+	PlayerActions = LookAction;
+	ClientCheckCurrentInputMode();
 	const FVector2D LookAxisValue = Value.Get<FVector2D>();
 	if (GetController())
 	{
 		AddControllerYawInput(LookAxisValue.X);
 		AddControllerPitchInput(LookAxisValue.Y);
 	}
+	
 }
 void AStarfallCharacter::Jump()
 {
 	if (bDisableGameplay) return;
+	PlayerActions = JumpAction;
+	ClientCheckCurrentInputMode();
 	if (bIsCrouched)
 	{
 		UnCrouch();
@@ -468,11 +526,14 @@ void AStarfallCharacter::Jump()
 	{
 		Super::Jump();
 	}
+	
 }
 
 void AStarfallCharacter::Equip()
 {
 	if (bDisableGameplay) return;
+	PlayerActions = EquipAction;
+	ClientCheckCurrentInputMode();
 	if (Combat)
 	{
 		if (HasAuthority())
@@ -489,6 +550,8 @@ void AStarfallCharacter::Equip()
 void AStarfallCharacter::Crouch()
 {
 	if (bDisableGameplay) return;
+	PlayerActions = CrouchAction;
+	ClientCheckCurrentInputMode();
 	if (bIsCrouched)
 	{
 		ACharacter::UnCrouch();
@@ -497,15 +560,19 @@ void AStarfallCharacter::Crouch()
 	{
 		ACharacter::Crouch();
 	}
+	
 }
 
 void AStarfallCharacter::Aim()
 {
 	if (bDisableGameplay) return;
+	PlayerActions = AimAction;
+	ClientCheckCurrentInputMode();
 	if (Combat)
 	{
 		Combat->SetAiming(true);
 	}
+	
 }
 
 void AStarfallCharacter::AimEnd()
@@ -520,15 +587,20 @@ void AStarfallCharacter::AimEnd()
 void AStarfallCharacter::FirePressed()
 {
 	if (bDisableGameplay) return;
+	PlayerActions = FireAction;
+	ClientCheckCurrentInputMode();
 	if (Combat)
 	{
 		Combat->FireButtonPressed(true);
 	}
+
 }
 
 void AStarfallCharacter::ScorePressed()
 {
 	if (bDisableGameplay) return;
+	PlayerActions = ScoreAction;
+	ClientCheckCurrentInputMode();
 	if (!WasScorePressed)
 	{
 		WasScorePressed = true;
@@ -542,7 +614,9 @@ void AStarfallCharacter::ScorePressed()
 				
 			}
 		}
+
 	}
+	
 }
 
 void AStarfallCharacter::ScoreReleased()
@@ -569,10 +643,13 @@ void AStarfallCharacter::ScoreReleased()
 void AStarfallCharacter::ReloadPressed()
 {
 	if (bDisableGameplay) return;
+	PlayerActions = ReloadAction;
+	ClientCheckCurrentInputMode();
 	if (Combat)
 	{
 		Combat->Reload();
 	}
+	
 }
 
 void AStarfallCharacter::FireReleased()
@@ -769,30 +846,93 @@ void AStarfallCharacter::StartDissolve()
 	}
 }
 
-void AStarfallCharacter::SetOVerlappingWeapon(AWeapon* Weapon)
+void AStarfallCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
-	if (OverlappingWeapon)
-	{
-		OverlappingWeapon->ShowPickupWidget(false);
-	}
+
+		if (OverlappingWeapon)
+		{
+			if (OverlappingWeapon)
+			{
+				
+				/*if (PlayerInputState == EControllerInputState::ECIS_Keyboard && OverlappingWeapon->PickUpWidgetClass && OverlappingWeapon->PickUpWidgetClass->ControllerPickupText && OverlappingWeapon->PickUpWidgetClass->PickupText)
+				{
+
+					OverlappingWeapon->PickUpWidgetClass->PickupText->SetIsEnabled(true);
+					OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetIsEnabled(false);
+					OverlappingWeapon->PickUpWidgetClass->PickupText->SetVisibility(ESlateVisibility::Visible);
+					OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetVisibility(ESlateVisibility::Hidden);
+					OverlappingWeapon->ShowPickupWidget(false);
+				}
+				else if (PlayerInputState == EControllerInputState::ECIS_Controller && OverlappingWeapon->PickUpWidgetClass && OverlappingWeapon->PickUpWidgetClass->ControllerPickupText && OverlappingWeapon->PickUpWidgetClass->PickupText)
+				{
+					OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetIsEnabled(true);
+					OverlappingWeapon->PickUpWidgetClass->PickupText->SetIsEnabled(false);
+					OverlappingWeapon->PickUpWidgetClass->PickupText->SetVisibility(ESlateVisibility::Hidden);
+					OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetVisibility(ESlateVisibility::Visible);
+					OverlappingWeapon->ShowPickupWidget(false);
+				}*/
+				OverlappingWeapon->ShowPickupWidget(false);
+			}
+			
+		}
+	
+	
 	
 	OverlappingWeapon = Weapon;
+
 
 	if (IsLocallyControlled())
 	{
 		if (OverlappingWeapon)
 		{
-			OverlappingWeapon->ShowPickupWidget(true);
+			UE_LOG(LogTemp, Error, TEXT("Is client activated"));
+			if (PlayerInputState == EControllerInputState::ECIS_Keyboard && OverlappingWeapon->PickUpWidgetClass && OverlappingWeapon->PickUpWidgetClass->ControllerPickupText && OverlappingWeapon->PickUpWidgetClass->PickupText)
+			{
+				OverlappingWeapon->PickUpWidgetClass->PickupText->SetIsEnabled(true);
+				OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetIsEnabled(false);
+				OverlappingWeapon->PickUpWidgetClass->PickupText->SetVisibility(ESlateVisibility::Visible);
+				OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetVisibility(ESlateVisibility::Hidden);
+				OverlappingWeapon->ShowPickupWidget(true);
+			}
+			else if (PlayerInputState == EControllerInputState::ECIS_Controller && OverlappingWeapon->PickUpWidgetClass && OverlappingWeapon->PickUpWidgetClass->ControllerPickupText && OverlappingWeapon->PickUpWidgetClass->PickupText)
+			{
+				OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetIsEnabled(true);
+				OverlappingWeapon->PickUpWidgetClass->PickupText->SetIsEnabled(false);
+				OverlappingWeapon->PickUpWidgetClass->PickupText->SetVisibility(ESlateVisibility::Hidden);
+				OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetVisibility(ESlateVisibility::Visible);
+				OverlappingWeapon->ShowPickupWidget(true);
+			}
+
 		}
 	}
+
 }
 
 void AStarfallCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 {
 	if (OverlappingWeapon)
 	{
-		OverlappingWeapon->ShowPickupWidget(true);
+		UE_LOG(LogTemp, Error, TEXT("Replicated"));
+		if (PlayerInputState == EControllerInputState::ECIS_Keyboard && OverlappingWeapon->PickUpWidgetClass && OverlappingWeapon->PickUpWidgetClass->ControllerPickupText && OverlappingWeapon->PickUpWidgetClass->PickupText)
+		{
+			OverlappingWeapon->PickUpWidgetClass->PickupText->SetIsEnabled(true);
+			OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetIsEnabled(false);
+			OverlappingWeapon->PickUpWidgetClass->PickupText->SetVisibility(ESlateVisibility::Visible);
+			OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetVisibility(ESlateVisibility::Hidden);
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+		else if (PlayerInputState == EControllerInputState::ECIS_Controller && OverlappingWeapon->PickUpWidgetClass &&  OverlappingWeapon->PickUpWidgetClass->ControllerPickupText && OverlappingWeapon->PickUpWidgetClass->PickupText)
+		{
+			OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetIsEnabled(true);
+			OverlappingWeapon->PickUpWidgetClass->PickupText->SetIsEnabled(false);
+			OverlappingWeapon->PickUpWidgetClass->PickupText->SetVisibility(ESlateVisibility::Hidden);
+			OverlappingWeapon->PickUpWidgetClass->ControllerPickupText->SetVisibility(ESlateVisibility::Visible);
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+		
 	}
+	
+
 	if (LastWeapon)
 	{
 		LastWeapon->ShowPickupWidget(false);

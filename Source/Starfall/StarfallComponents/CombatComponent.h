@@ -97,6 +97,7 @@ private:
 
 	FVector HitTarget;
 
+	
 	FHUDPackage HUDPackage;
 
 	/*

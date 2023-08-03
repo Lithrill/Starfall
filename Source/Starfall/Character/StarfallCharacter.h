@@ -46,7 +46,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	TSubclassOf<class AHumanElimAnimation> ElimVehicleToSpawn;
 
-
+	UPROPERTY()
+	EControllerInputState PlayerInputState;
 
 	UPROPERTY()
 	class AStarfallHUD* StarfallHUD;
@@ -87,6 +88,9 @@ public:
 	FVector	RocketForceDirection;
 
 
+	UPROPERTY()
+	class AStarfallPlayerController* ThisPlayerController;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -121,7 +125,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* ReloadAction;
 
-	void CheckCurrentInputMode();
+
+	UFUNCTION()
+	void ClientCheckCurrentInputMode();
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -142,6 +148,11 @@ protected:
 	void RocketJump();
 
 	void PlayHitReactMontage();
+
+	UPROPERTY()
+	UInputAction* PlayerActions;
+
+	
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
@@ -269,9 +280,11 @@ private:
 	UPROPERTY()
 	class AStarfallPlayerState* StarfallPlayerState;
 
-public:	
-	void SetOVerlappingWeapon(AWeapon* Weapon);
 
+	
+public:	
+	
+	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
 	bool IsAiming();
 	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw;  }

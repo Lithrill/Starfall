@@ -11,6 +11,9 @@
 #include "Casing.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Starfall/PlayerController/StarfallPlayerController.h"
+#include "Starfall/HUD/PickUpWidget.h"
+#include "Starfall/StarfallTypes/ControllerInputState.h"
+
 
 
 
@@ -38,6 +41,8 @@ AWeapon::AWeapon()
 
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Pickupwidget"));
 	PickupWidget->SetupAttachment(RootComponent);
+
+
 }
 
 
@@ -56,7 +61,17 @@ void AWeapon::BeginPlay()
 	if (PickupWidget)
 	{
 		PickupWidget->SetVisibility(false);
+		if (PickupWidget && PickupWidget->GetUserWidgetObject())
+		{
+			PickUpWidgetClass = Cast<UPickUpWidget>(PickupWidget->GetUserWidgetObject());
+			if (PickUpWidgetClass)
+			{
+
+			}
+		}
 	}
+
+	
 
 }
 
@@ -73,6 +88,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 
 	DOREPLIFETIME(AWeapon, WeaponState);
 	DOREPLIFETIME(AWeapon, Ammo);
+	
 }
 
 
@@ -81,31 +97,29 @@ void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 {
 	AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(OtherActor);
 	
-	if (StarfallCharacter)
+	if (StarfallCharacter /*&& StarfallCharacter->IsLocallyControlled()*/)
 	{
 		AController* StarfallPlayerController = StarfallCharacter->GetController();
 		if (StarfallCharacter && PickupWidget && StarfallPlayerController)
 		{
-			//switch (StarfallPlayerController->GetInputMode())
-			//{
-			//case EInputMode::Gamepad: // Assuming EInputMode::Gamepad represents the gamepad input mode
-			//	 The player is using a controller (gamepad)
-			//	HandleControllerInput();
-			//	break;
-			//case EInputMode::Keyboard: // Assuming EInputMode::Keyboard represents the keyboard input mode
-			//	 The player is using a keyboard or some other input device
-			//	HandleKeyboardInput();
-			//	break;
-			//default:
-			//	 Handle other input modes if necessary
-			//	break;
-			//}
-			StarfallCharacter->SetOVerlappingWeapon(this);
+			StarfallCharacter->SetOverlappingWeapon(this);
+			
+			if (PickupWidget && PickupWidget->GetUserWidgetObject())
+			{
+				PickUpWidgetClass = Cast<UPickUpWidget>(PickupWidget->GetUserWidgetObject());
+				if (PickUpWidgetClass)
+				{
+					
+				}
+			}
+			
 		}
+		
 	}
 
 	
 }
+
 
 void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
@@ -115,12 +129,13 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		AController* StarfallPlayerController = StarfallCharacter->GetController();
 		if (StarfallCharacter && PickupWidget && StarfallPlayerController)
 		{
-			
-			StarfallCharacter->SetOVerlappingWeapon(nullptr);
+			StarfallCharacter->SetOverlappingWeapon(nullptr);
 		}
 	}
 	
 }
+
+
 
 void AWeapon::SetHUDAmmo()
 {
@@ -215,6 +230,7 @@ void AWeapon::ShowPickupWidget(bool bShowWidget)
 	{
 		PickupWidget->SetVisibility(bShowWidget);
 	}
+
 }
 
 void AWeapon::Fire(const FVector& HitTarget)

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
+#include "Starfall/StarfallTypes/ControllerInputState.h"
 #include "PickUpWidget.generated.h"
 
 /**
@@ -20,5 +21,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* PickupText;
 
-
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ControllerPickupText;
 };
