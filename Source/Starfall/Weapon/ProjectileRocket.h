@@ -77,4 +77,5 @@ private:
 	UPROPERTY(EditAnywhere, Category = "ExplosionChaosField")
 	UBlueprint* ExplosionFieldSystem;
 
+	void ClientExplosionForce();
 };

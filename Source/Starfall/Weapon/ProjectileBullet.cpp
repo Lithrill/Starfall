@@ -21,7 +21,17 @@ AProjectileBullet::AProjectileBullet()
 
 void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	
+	AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(OtherActor);
+	if (StarfallCharacter)
+	{
+		FVector ProjectileVelocity = GetVelocity();
+		FVector ProjectileImpactDirection = ProjectileVelocity.GetSafeNormal();
+
+		StarfallCharacter->ImpactImpulseForce = WeaponImpactImpulseForce;
+		StarfallCharacter->ImpactDirection = ProjectileImpactDirection;
+		StarfallCharacter->BoneImpactName = Hit.BoneName;
+		StarfallCharacter->ImpactPoint = Hit.ImpactPoint;
+	}
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if (OwnerCharacter)
 	{
@@ -30,26 +40,23 @@ void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		if (OwnerController)
 		{
 
-			AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(OtherActor);
-			if (StarfallCharacter)
+			
+			if (HasAuthority())
 			{
-				FVector ProjectileVelocity = GetVelocity();
-				FVector ProjectileImpactDirection = ProjectileVelocity.GetSafeNormal();
-
-				StarfallCharacter->ImpactImpulseForce = WeaponImpactImpulseForce;
-				StarfallCharacter->ImpactDirection = ProjectileImpactDirection;
-				StarfallCharacter->BoneImpactName = Hit.BoneName;
-				StarfallCharacter->ImpactPoint = Hit.ImpactPoint;
+				UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
 			}
-			UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
-
-			AWeapon* StarfallWeapon = Cast<AWeapon>(OtherActor);
-			if (StarfallWeapon)
+			
+			if (HasAuthority())
 			{
-				FVector ProjectileVelocity = GetVelocity();
-				FVector ProjectileImpactDirection = ProjectileVelocity.GetSafeNormal();
-				StarfallWeapon->GetWeaponMesh()->AddImpulseAtLocation(ProjectileImpactDirection * WeaponImpactImpulseForce, Hit.ImpactPoint, Hit.BoneName);
+				AWeapon* StarfallWeapon = Cast<AWeapon>(OtherActor);
+				if (StarfallWeapon)
+				{
+					FVector ProjectileVelocity = GetVelocity();
+					FVector ProjectileImpactDirection = ProjectileVelocity.GetSafeNormal();
+					StarfallWeapon->GetWeaponMesh()->AddImpulseAtLocation(ProjectileImpactDirection * WeaponImpactImpulseForce, Hit.ImpactPoint, Hit.BoneName);
+				}
 			}
+			
 		}
 	}
 	

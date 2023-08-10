@@ -16,6 +16,7 @@ class STARFALL_API AHitScanWeapon : public AWeapon
 public:
 	virtual void Fire(const FVector& HitTarget) override;
 
+	//AHitScanWeapon();
 private:
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
@@ -28,5 +29,20 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float WeaponImpactImpulseForce = 0.f;
+
+	UPROPERTY()
+	FVector WeaponImpactDirection;
+
+	UPROPERTY()
+	FName WeaponImpactBone;
+
+	UPROPERTY()
+	FVector WeaponImpactPoint;
+
+
+	UPROPERTY()
+	class AStarfallCharacter* StarfallPlayerCharacter;
+
+	
 
 };

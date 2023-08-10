@@ -68,6 +68,7 @@ void AProjectile::Tick(float DeltaTime)
 
 void AProjectile::Destroyed()
 {
+
 	if (ImpactParticles)
 	{
 		FTransform SpawnTransform = GetActorTransform();

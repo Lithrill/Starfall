@@ -101,8 +101,6 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	APawn* FiringPawn = GetInstigator();
 	if (FiringPawn && HasAuthority())
 	{
-
-
 		AController* FiringController = FiringPawn->GetController();
 		if (FiringController)
 		{
@@ -325,6 +323,8 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		}
 	}
 
+
+	ClientExplosionForce();
 	GetWorldTimerManager().SetTimer(
 		DestroyTimer,
 		this,
@@ -367,4 +367,125 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 void AProjectileRocket::Destroyed()
 {
 
+}
+
+void AProjectileRocket::ClientExplosionForce()
+{
+	bool bTraceComplex = false; // Set this to true if you want precise collision checks
+	TArray<AStarfallCharacter*> StarfallCharacters;
+	TArray<AActor*> ActorsRefs;
+	TArray<AWeapon*> WeaponActors;
+	//TSet<AStarfallCharacter*> StarfallCharacters;
+
+	TArray<AActor*> IgnoreActors;
+	IgnoreActors.Add(this);
+
+	TArray<FHitResult> OutHits;
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel1));
+
+
+	// Perform a capsule trace for each character in the level
+	// Adjust the capsule radius and length according to your needs
+	bool bHit = UKismetSystemLibrary::CapsuleTraceMultiForObjects(
+		this, // World context object
+		GetActorLocation(), // Start location (origin of the explosion)
+		GetActorLocation(), // End location (use the same as the start for a point-based explosion)
+		DamageOuterRadius, // Capsule radius (damage outer radius)
+		DamageOuterRadius / 2, // Capsule half-height (damage outer radius + damage falloff)
+		ObjectTypes, // Object types to trace (here, we're tracing against pawns/characters)
+		bTraceComplex, // Trace complex shapes (true for precise checks, false for simple checks)
+		IgnoreActors, // Actors to ignore (in this case, the projectile actor itself)
+		EDrawDebugTrace::None, // Draw debug traces (useful for debugging)
+		OutHits, // Output array of hit results
+		true // Ignore self (set to true to ignore the damage causer itself)
+	);
+
+	if (bHit)
+	{
+		for (const FHitResult& HitResult : OutHits)
+		{
+			AActor* AffectedActor = HitResult.GetActor();
+			AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(AffectedActor);
+			//if (!StarfallCharacter && !Weapon)
+			//{
+			//	//SetChaosDamage && change gravity property
+			//	bool bIsDuplicate = false;
+			//	for (AActor* ExistingAffectedActor : ActorsRefs)
+			//	{
+			//		if (ExistingAffectedActor == AffectedActor && ExistingAffectedActor != Weapon && ExistingAffectedActor != StarfallCharacter)
+			//		{
+			//			bIsDuplicate = true;
+			//			break;
+			//		}
+			//	}
+			//	if (!bIsDuplicate)
+			//	{
+			//		UPrimitiveComponent* ActorRootComponent = AffectedActor->FindComponentByClass<UPrimitiveComponent>();
+			//		if (ActorRootComponent)
+			//		{
+			//			ActorRootComponent->SetSimulatePhysics(true);
+			//			ActorRootComponent->SetEnableGravity(true);
+			//			UE_LOG(LogTemp, Error, TEXT("Gravity switched on"));
+			//		}
+			//		
+			//	}
+			//}
+
+			if (StarfallCharacter && !StarfallCharacters.Contains(StarfallCharacter))
+			{
+				// Check if DamagedActor is already in the DamagedActors array
+				bool bIsDuplicate = false;
+				for (AActor* ExistingAffectedActor : StarfallCharacters)
+				{
+					if (ExistingAffectedActor == AffectedActor)
+					{
+						bIsDuplicate = true;
+						break;
+					}
+				}
+
+				if (!bIsDuplicate)
+				{
+					// Perform a line trace from the explosion origin to the hit actor's location
+					FHitResult LineTraceHit;
+					FVector EndLocation = StarfallCharacter->GetActorLocation(); // Use the hit actor's location as the end location of the line trace
+					FCollisionQueryParams LineTraceParams;
+
+
+
+					LineTraceParams.AddIgnoredActor(this); // Ignore the projectile actor itself
+					GetWorld()->LineTraceSingleByChannel(LineTraceHit, GetActorLocation(), EndLocation, ECC_EngineTraceChannel2, LineTraceParams);
+
+					/*	DrawDebugLine(
+							GetWorld(),
+							GetActorLocation(),
+							EndLocation,
+							FColor::Red,
+							false, 100.f, 0,
+							50.f
+						);*/
+
+						// Check if the line trace hits something
+					if (LineTraceHit.GetActor() && LineTraceHit.GetActor() != StarfallCharacter)
+					{
+
+					}
+					else
+					{
+						if (StarfallCharacter)
+						{
+							StarfallCharacter->ExplosionRadius = DamageOuterRadius;
+							StarfallCharacter->ExplosionForce = ExplosionImpactImpulseForce;
+							StarfallCharacter->ExplosionPoint = GetActorLocation();
+
+						}
+
+					}
+				}
+			}
+		}
+	}
 }

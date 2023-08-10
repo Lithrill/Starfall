@@ -145,30 +145,30 @@ void AStarfallCharacter::Elim()
 
 	//Ragdoll the player
 
-	GetCharacterMovement()->DisableMovement();
-	GetCharacterMovement()->StopMovementImmediately();
-	GetCharacterMovement()->SetComponentTickEnabled(false);
+	//GetCharacterMovement()->DisableMovement();
+	//GetCharacterMovement()->StopMovementImmediately();
+	//GetCharacterMovement()->SetComponentTickEnabled(false);
 
-	// Disable capsule collision
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//// Disable capsule collision
+	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetMesh()->SetAllBodiesSimulatePhysics(true);
-	GetMesh()->SetSimulatePhysics(true);
-	GetMesh()->WakeAllRigidBodies();
+	//GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//GetMesh()->SetAllBodiesSimulatePhysics(true);
+	//GetMesh()->SetSimulatePhysics(true);
+	//GetMesh()->WakeAllRigidBodies();
 
-	bool bExplosionImpactSettings = (ExplosionPoint == FVector::ZeroVector && ExplosionForce == 0.f && ExplosionRadius == 0.f);
-	if (!bExplosionImpactSettings)
-	{
-		GetMesh()->AddRadialImpulse(ExplosionPoint, ExplosionRadius, ExplosionForce, ERadialImpulseFalloff::RIF_Linear);
-	}
+	//bool bExplosionImpactSettings = (ExplosionPoint == FVector::ZeroVector && ExplosionForce == 0.f && ExplosionRadius == 0.f);
+	//if (!bExplosionImpactSettings)
+	//{
+	//	GetMesh()->AddRadialImpulse(ExplosionPoint, ExplosionRadius, ExplosionForce, ERadialImpulseFalloff::RIF_Linear);
+	//}
 
-	bool bImpactSettings = (ImpactDirection == FVector::ZeroVector && ImpactPoint == FVector::ZeroVector && BoneImpactName == FName() && ImpactImpulseForce == 0.f);
-	if (!bImpactSettings)
-	{
-		GetMesh()->AddImpulseAtLocation(ImpactDirection * ImpactImpulseForce, ImpactPoint, BoneImpactName);
-	}
-	
+	//bool bImpactSettings = (ImpactDirection == FVector::ZeroVector && ImpactPoint == FVector::ZeroVector && BoneImpactName == FName() && ImpactImpulseForce == 0.f);
+	//if (!bImpactSettings)
+	//{
+	//	GetMesh()->AddImpulseAtLocation(ImpactDirection * ImpactImpulseForce, ImpactPoint, BoneImpactName);
+	//}
+	//
 }
 
 void AStarfallCharacter::Destroy()
@@ -206,9 +206,8 @@ void AStarfallCharacter::MulticastElim_Implementation()
 	{
 		StarfallPlayerController->SetHUDWeaponAmmo(0);
 		StarfallPlayerController->SetHUDCarriedAmmo(0);
-		
 	}
-	bElimmed = true;
+	
 	//PlayElimMontage();
 
 	
@@ -235,38 +234,38 @@ void AStarfallCharacter::MulticastElim_Implementation()
 		Combat->FireButtonPressed(false);
 	}
 	// Disable collision
+	/*GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);*/
+
+
+	//Ragdoll the player
+
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->SetComponentTickEnabled(false);
+
+	// Disable capsule collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	//Spawn in ElimVehicleObject
-	//if (ElimVehicleToSpawn)
-	//{
-	//	UWorld* World = GetWorld();
-	//	if (World == nullptr)
-	//	{
-	//		return;
-	//	}
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->WakeAllRigidBodies();
 
-	//	FActorSpawnParameters SpawnParams;
-	//	
+	bool bExplosionImpactSettings = (ExplosionPoint == FVector::ZeroVector && ExplosionForce == 0.f && ExplosionRadius == 0.f);
+	if (!bExplosionImpactSettings)
+	{
+		GetMesh()->AddRadialImpulse(ExplosionPoint, ExplosionRadius, ExplosionForce, ERadialImpulseFalloff::RIF_Linear);
+	}
 
-	//	FVector SpawnCustomProperties;
+	bool bImpactSettings = (ImpactDirection == FVector::ZeroVector && ImpactPoint == FVector::ZeroVector && BoneImpactName == FName() && ImpactImpulseForce == 0.f);
+	if (!bImpactSettings)
+	{
+		GetMesh()->AddImpulseAtLocation(ImpactDirection * ImpactImpulseForce, ImpactPoint, BoneImpactName);
+	}
 
-	//	//SpawnCustomProperties.X = -1000.f;
-	//	//SpawnCustomProperties.Y = -6000.f;
-	//	SpawnCustomProperties.Z = 500.f;
-
-	//	FVector SpawnLocation = GetActorLocation()  + SpawnCustomProperties + (GetActorForwardVector() * -5000); // Offset from character forward direction
-	//	FRotator SpawnRotation = GetActorRotation();
-
-	//	
-	//	World->SpawnActor<AHumanElimAnimation>(ElimVehicleToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
-
-	//	if (ElimVehicleToSpawn != nullptr)
-	//	{
-	//		// Do something with the new object
-	//	}
-	//}
+	bElimmed = true;
+	
 }
 
 void AStarfallCharacter::ElimTimerFinished()

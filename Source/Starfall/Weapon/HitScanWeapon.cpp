@@ -9,6 +9,11 @@
 #include "NiagaraComponent.h"
 #include "Weapon.h"
 #include "Starfall/Environment/WindowColourChanger.h"
+#include "Net/UnrealNetwork.h"
+#include "Engine/Engine.h"
+#include "DrawDebugHelpers.h"
+
+
 
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
@@ -66,17 +71,25 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			
 			BeamEnd = FireHit.ImpactPoint;
 			AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(FireHit.GetActor());
-			if (StarfallCharacter && HasAuthority() && InstigatorController)
+			if (StarfallCharacter)
 			{
+				StarfallPlayerCharacter = StarfallCharacter;
+				WeaponImpactDirection = (End - Start).GetSafeNormal();
 
-				FVector WeaponImpactDirection = (End - Start).GetSafeNormal();
-				FVector ImpactPoint = FireHit.ImpactPoint;
+				WeaponImpactPoint = FireHit.ImpactPoint;
+
+				WeaponImpactBone = FireHit.BoneName;
+
+				//OnRep_WeaponImpactImpulseForce();
 
 				StarfallCharacter->ImpactImpulseForce = WeaponImpactImpulseForce;
 				StarfallCharacter->ImpactDirection = WeaponImpactDirection;
-				StarfallCharacter->BoneImpactName = FireHit.BoneName;
-				StarfallCharacter->ImpactPoint = FireHit.ImpactPoint;
-
+				StarfallCharacter->BoneImpactName = WeaponImpactBone;
+				StarfallCharacter->ImpactPoint = WeaponImpactPoint;
+			}
+			if (StarfallCharacter && HasAuthority() && InstigatorController)
+			{
+				//OnRep_ImpulseForce();
 				UGameplayStatics::ApplyDamage(
 					StarfallCharacter,
 					Damage,
@@ -91,10 +104,10 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			{
 				if (StarfallWeapon && HasAuthority())
 				{
-					FVector WeaponImpactDirection = (End - Start).GetSafeNormal();
+					FVector AWeaponImpactDirection = (End - Start).GetSafeNormal();
 					FVector ImpactPoint = FireHit.ImpactPoint;
 
-					StarfallWeapon->GetWeaponMesh()->AddImpulseAtLocation(WeaponImpactDirection * WeaponImpactImpulseForce, FireHit.ImpactPoint, FireHit.BoneName);
+					StarfallWeapon->GetWeaponMesh()->AddImpulseAtLocation(AWeaponImpactDirection * WeaponImpactImpulseForce, FireHit.ImpactPoint, FireHit.BoneName);
 				}
 			}
 
@@ -121,11 +134,13 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			);
 			if (Beam)
 			{
-
-				
 				Beam->SetVectorParameter(FName("BeamEnd"), BeamEnd);
 			}
 		}
 		
 	}
 }
+
+
+
+

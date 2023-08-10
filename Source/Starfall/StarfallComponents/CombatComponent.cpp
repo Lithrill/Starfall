@@ -140,6 +140,7 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
+		
 	}
 }
 
