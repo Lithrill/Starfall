@@ -171,7 +171,26 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
 
+	/*
+	* MiniMap
+	*/
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	class USpringArmComponent* MinimapCameraBoom;
+
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	class USceneCaptureComponent2D* MinimapCaptureComponent2D;
+
+	UPROPERTY(VisibleAnywhere)
+	class UCanvasRenderTarget2D* MinimapRenderTarget;
+
 	
+
+	UPROPERTY(VisibleAnywhere)
+	UMaterialInstanceDynamic* DynamicMinimapIconMaterialInstance;
+
+	UPROPERTY(EditAnywhere)
+	UMaterialInterface* MinimapIconMaterial;
+
 
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	class AWeapon* OverlappingWeapon;

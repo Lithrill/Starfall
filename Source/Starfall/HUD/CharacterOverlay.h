@@ -28,4 +28,15 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* MatchCountdownText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Minimap;
+
+	UPROPERTY(VisibleAnywhere)
+	class UCanvasRenderTarget2D* MinimapTarget;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* CHDynamicMinimapIconMaterialInstance;
+
+	void UpdateCharacterMinimapMaterial();
 };

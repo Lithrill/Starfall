@@ -31,10 +31,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "InputCoreTypes.h"
 #include "Starfall/HUD/PickUpWidget.h"
-
-
-
-
+#include "Components/SceneCaptureComponent2D.h"
+#include "PaperSpriteComponent.h"
+#include "PaperSprite.h"
+#include "Engine/CanvasRenderTarget2D.h"
 
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
@@ -73,6 +73,27 @@ AStarfallCharacter::AStarfallCharacter()
 
 	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
 
+	MinimapCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("MiniMapCameraBoom"));
+	MinimapCameraBoom->SetupAttachment(GetMesh());
+	MinimapCameraBoom->TargetArmLength = 400.0f;
+	MinimapCameraBoom->bUsePawnControlRotation = false;
+
+	MinimapCaptureComponent2D = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("MiniMapCameraComponent"));
+	MinimapCaptureComponent2D->SetupAttachment(MinimapCameraBoom, USpringArmComponent::SocketName);
+
+	 /*PlayerSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("SpriteComponent"));
+	 PlayerSpriteComponent->SetupAttachment(GetMesh());*/
+
+	 /*PlayerSprite = CreateDefaultSubobject<UPaperSprite>(TEXT("PlayerSprite"));
+	 PlayerSprite->Attach*/
+
+	//MinimapRenderTarget = CreateDefaultSubobject<UTextureRenderTarget2D>(TEXT("PlayerMinimapRenderTarget"));
+	//
+	//
+	
+	
+	//
+	
 	
 }
 
@@ -92,6 +113,7 @@ void AStarfallCharacter::BeginPlay()
 
 	UpdateHUDHealth();
 
+	
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AStarfallCharacter::ReceiveDamage);
@@ -198,6 +220,40 @@ void AStarfallCharacter::SetUpPlayerInput()
 	}
 	AStarfallPlayerController* MyPlayerController = IsValid(this) ? Cast<AStarfallPlayerController>(this->GetController()) : nullptr;
 	//ThisPlayerController = MyPlayerController;
+
+	if (IsLocallyControlled() && !HasAuthority())
+	{
+		MinimapRenderTarget = NewObject<UCanvasRenderTarget2D>(this);
+		MinimapRenderTarget->InitAutoFormat(1024, 1024); // Set the dimensions and format as needed
+
+
+
+		if (MinimapRenderTarget && MinimapCaptureComponent2D)
+		{
+			MinimapCaptureComponent2D->TextureTarget = MinimapRenderTarget;
+			if (MinimapIconMaterial)
+			{
+				DynamicMinimapIconMaterialInstance = UMaterialInstanceDynamic::Create(MinimapIconMaterial, this);
+			}
+			if (DynamicMinimapIconMaterialInstance && StarfallPlayerController && DynamicMinimapIconMaterialInstance != nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("DynamicMinimapIconMaterialInstance: %s"), DynamicMinimapIconMaterialInstance ? TEXT("Valid") : TEXT("Invalid"));
+
+				DynamicMinimapIconMaterialInstance->SetTextureParameterValue("MyTextureParam", MinimapRenderTarget);
+				StarfallPlayerController->DynamicMinimapMaterialInstance = DynamicMinimapIconMaterialInstance;
+
+				StarfallPlayerController->UpdateMinimapMat();
+			}
+		}
+	}
+	else if (HasAuthority())
+	{
+
+	}
+
+	
+	
+
 }
 
 void AStarfallCharacter::MulticastElim_Implementation()
@@ -321,7 +377,7 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AStarfallCharacter::FireReleased);
 		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::ScorePressed);
 		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Completed, this, &AStarfallCharacter::ScoreReleased);
-		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::ReloadPressed);
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AStarfallCharacter::ReloadPressed);
 	}
 }
 
@@ -427,54 +483,54 @@ void AStarfallCharacter::PlayReloadMontage()
 void AStarfallCharacter::PlayElimMontage()
 {
 
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && ElimMontage)
-	{
-		AnimInstance->Montage_Play(ElimMontage);
+	//UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	//if (AnimInstance && ElimMontage)
+	//{
+	//	AnimInstance->Montage_Play(ElimMontage);
 
-		// Generate a random index for selecting a section
-		FRandomStream RandomStream;
-		RandomStream.GenerateNewSeed();
+	//	// Generate a random index for selecting a section
+	//	FRandomStream RandomStream;
+	//	RandomStream.GenerateNewSeed();
 
-		// Get the section names of the "elimslot" slot
-		TArray<FName> SectionNames = { FName("Death"), FName("Death2"), FName("Death3"), 
-			FName("Death4"), FName("Death5"), FName("Death6"), 
-			FName("Death7"), FName("Death8"), FName("Death9"), 
-			FName("Death10"), FName("Death11"), FName("Death12"), 
-			FName("Death13"), FName("Death14"), FName("Death15") 
-		};
+	//	// Get the section names of the "elimslot" slot
+	//	TArray<FName> SectionNames = { FName("Death"), FName("Death2"), FName("Death3"), 
+	//		FName("Death4"), FName("Death5"), FName("Death6"), 
+	//		FName("Death7"), FName("Death8"), FName("Death9"), 
+	//		FName("Death10"), FName("Death11"), FName("Death12"), 
+	//		FName("Death13"), FName("Death14"), FName("Death15") 
+	//	};
 
-		if (SectionNames.Num() > 0)
-		{
-			int32 RandomIndex = RandomStream.RandRange(0, SectionNames.Num() - 1);
+	//	if (SectionNames.Num() > 0)
+	//	{
+	//		int32 RandomIndex = RandomStream.RandRange(0, SectionNames.Num() - 1);
 
-			// Get the random section name
-			FName RandomSectionName = SectionNames[RandomIndex];
+	//		// Get the random section name
+	//		FName RandomSectionName = SectionNames[RandomIndex];
 
-			// Jump to the random section
-			AnimInstance->Montage_JumpToSection(RandomSectionName);
-		}
-	}
+	//		// Jump to the random section
+	//		AnimInstance->Montage_JumpToSection(RandomSectionName);
+	//	}
+	//}
 }
 
 void AStarfallCharacter::PlayHitReactMontage()
 {
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
 
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	/*UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && HitReactMontage)
 	{
 		AnimInstance->Montage_Play(HitReactMontage);
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
-	}
+	}*/
 }
 
 void AStarfallCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
-	PlayHitReactMontage();
+	/*PlayHitReactMontage();*/
 
 	
 	
