@@ -39,10 +39,15 @@ private:
 	UPROPERTY()
 	FVector WeaponImpactPoint;
 
-
 	UPROPERTY()
 	class AStarfallCharacter* StarfallPlayerCharacter;
 
-	
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* MuzzleFlash;
 
+	UPROPERTY(EditAnywhere)
+	class USoundCue* FireSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* HitSound;
 };

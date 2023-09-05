@@ -123,6 +123,8 @@ void UCombatComponent::FireTimerFinished()
 	if (EquippedWeapon->IsEmpty())
 	{
 		Reload();
+		/*ReloadDelay = EquippedWeapon->ReloadDelay;
+		Character->GetWorldTimerManager().SetTimer(ReloadTimer, this, &UCombatComponent::FinishReloading, ReloadDelay, false);*/
 	}
 }
 
@@ -175,6 +177,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (EquippedWeapon->IsEmpty())
 	{
 		Reload();
+		/*ReloadDelay = EquippedWeapon->ReloadDelay;
+		Character->GetWorldTimerManager().SetTimer(ReloadTimer, this, &UCombatComponent::FinishReloading, ReloadDelay, false);*/
 	}
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -183,7 +187,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::Reload()
 {
-	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
+	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading && !EquippedWeapon->IsFull())
 	{
 		ServerReload();
 	}
@@ -194,9 +198,11 @@ void UCombatComponent::ServerReload_Implementation()
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
 
 	
-
 	CombatState = ECombatState::ECS_Reloading;
+	
 	HandleReload();
+	ReloadDelay = EquippedWeapon->ReloadDelay;
+	Character->GetWorldTimerManager().SetTimer(ReloadTimer, this, &UCombatComponent::FinishReloading, ReloadDelay, false);
 	
 }
 
@@ -465,6 +471,8 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_RocketLauncher, StartingRocketAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_GalacticCrocketLauncher, StartingGCrocketAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartingPistolAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_RocketJumperLauncher, StartingRocketJumperAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_SubmachineGun, StartingSubmachineGunAmmo);
 }
 
 

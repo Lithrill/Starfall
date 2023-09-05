@@ -12,6 +12,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/Engine.h"
 #include "DrawDebugHelpers.h"
+#include "Sound/SoundCue.h"
 
 
 
@@ -122,6 +123,14 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 					FireHit.ImpactNormal.Rotation()
 				);
 			}	
+			if (HitSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					this,
+					HitSound,
+					FireHit.ImpactPoint
+					);
+			}
 		}
 		if (BeamParticles)
 		{
@@ -137,7 +146,23 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				Beam->SetVectorParameter(FName("BeamEnd"), BeamEnd);
 			}
 		}
-		
+		if (MuzzleFlash)
+		{
+			UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				World,
+				MuzzleFlash,
+				SocketTransform.GetLocation(),
+				SocketTransform.GetRotation().Rotator()
+			);
+		}
+		if (FireSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				FireSound,
+				GetActorLocation()
+			);
+		}
 	}
 }
 

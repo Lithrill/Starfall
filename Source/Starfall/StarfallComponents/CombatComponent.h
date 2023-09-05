@@ -121,7 +121,12 @@ private:
 	*	Automatic Fire
 	*/
 	FTimerHandle FireTimer;
+
+	FTimerHandle ReloadTimer;
 	
+	UPROPERTY()
+	float ReloadDelay;
+
 	bool bCanFire = true;
 
 	void StartFireTimer();
@@ -149,6 +154,12 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	int32 StartingPistolAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingRocketJumperAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingSubmachineGunAmmo = 0;
 
 	void InitializeCarriedAmmo();
 
