@@ -236,11 +236,12 @@ void AStarfallCharacter::MulticastElim_Implementation()
 		StarfallPlayerController->SetHUDWeaponAmmo(0);
 		StarfallPlayerController->SetHUDCarriedAmmo(0);
 	}
-	
-	//PlayElimMontage();
+	bool bHideSniperScope = IsLocallyControlled() && Combat && Combat->bAiming && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle;
 
-	
-	
+	if (bHideSniperScope)
+	{
+		ShowSniperScopeWidget(false);
+	}
 
 	// Start dissolve effect
 
@@ -344,7 +345,7 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Jump);
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Equip);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Crouch);
-		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Aim);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AStarfallCharacter::Aim);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AStarfallCharacter::AimEnd);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AStarfallCharacter::FirePressed);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AStarfallCharacter::FireReleased);
