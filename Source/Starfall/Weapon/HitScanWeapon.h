@@ -17,12 +17,22 @@ public:
 	virtual void Fire(const FVector& HitTarget) override;
 
 	//AHitScanWeapon();
-private:
-	UPROPERTY(EditAnywhere)
-	float Damage = 20.f;
+
+protected:
+	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
+
+	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit, FHitResult& WindowOutHit);
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* ImpactParticles;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* HitSound;
+
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+
+private:
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* BeamParticles;
@@ -48,6 +58,17 @@ private:
 	UPROPERTY(EditAnywhere)
 	class USoundCue* FireSound;
 
-	UPROPERTY(EditAnywhere)
-	class USoundCue* HitSound;
+	
+	/**
+	*Trace end with scatter
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float DistanceToSphere = 800.f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float SphereRadius = 75.f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	bool bUseScatter = false;
 };

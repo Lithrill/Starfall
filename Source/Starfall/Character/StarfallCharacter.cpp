@@ -21,7 +21,7 @@
 #include "Starfall/GameMode/StarfallGameMode.h"
 #include "Math/RandomStream.h"
 #include "TimerManager.h"
-#include "Starfall/ElimAnimations/HumanElimAnimation.h"
+
 #include "Engine/World.h"
 #include "Starfall/HUD/ScoreHUD.h"
 #include "Starfall/HUD/StarfallHUD.h"
@@ -164,33 +164,6 @@ void AStarfallCharacter::Elim()
 		ElimDelay
 	);
 
-
-	//Ragdoll the player
-
-	//GetCharacterMovement()->DisableMovement();
-	//GetCharacterMovement()->StopMovementImmediately();
-	//GetCharacterMovement()->SetComponentTickEnabled(false);
-
-	//// Disable capsule collision
-	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	//GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	//GetMesh()->SetAllBodiesSimulatePhysics(true);
-	//GetMesh()->SetSimulatePhysics(true);
-	//GetMesh()->WakeAllRigidBodies();
-
-	//bool bExplosionImpactSettings = (ExplosionPoint == FVector::ZeroVector && ExplosionForce == 0.f && ExplosionRadius == 0.f);
-	//if (!bExplosionImpactSettings)
-	//{
-	//	GetMesh()->AddRadialImpulse(ExplosionPoint, ExplosionRadius, ExplosionForce, ERadialImpulseFalloff::RIF_Linear);
-	//}
-
-	//bool bImpactSettings = (ImpactDirection == FVector::ZeroVector && ImpactPoint == FVector::ZeroVector && BoneImpactName == FName() && ImpactImpulseForce == 0.f);
-	//if (!bImpactSettings)
-	//{
-	//	GetMesh()->AddImpulseAtLocation(ImpactDirection * ImpactImpulseForce, ImpactPoint, BoneImpactName);
-	//}
-	//
 }
 
 void AStarfallCharacter::Destroy()
@@ -397,28 +370,24 @@ void  AStarfallCharacter::ClientCheckCurrentInputMode()
 					{
 
 						PlayerInputState = EControllerInputState::ECIS_Keyboard;
-						//IsUsingKeyBoard = true;
-						//IsUsingController = false;
+				
 					}
 					else if (ThisPlayerController->IsInputKeyDown(EKeys::W))
 					{
 
 						PlayerInputState = EControllerInputState::ECIS_Keyboard;
-						//UE_LOG(LogTemp, Warning, TEXT("keyboard"));
-						//UE_LOG(LogTemp, Warning, TEXT("PlayerInputState: %s"), *UEnum::GetValueAsString(PlayerInputState));
+					
 					}
 					else if (ThisPlayerController->IsInputKeyDown(EKeys::Gamepad_LeftStick_Up))
 					{
 
 						PlayerInputState = EControllerInputState::ECIS_Controller;
-						//UE_LOG(LogTemp, Warning, TEXT("Gamepad"));
-						//UE_LOG(LogTemp, Warning, TEXT("PlayerInputState: %s"), *UEnum::GetValueAsString(PlayerInputState));
+					
 					}
 				}
 				else if (key.IsMouseButton())
 				{
-					//UE_LOG(LogTemp, Warning, TEXT("Is Mouse input"));
-					//UE_LOG(LogTemp, Warning, TEXT("PlayerInputState: %s"), *UEnum::GetValueAsString(PlayerInputState));
+				
 				}
 			}
 		}
@@ -480,6 +449,12 @@ void AStarfallCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_SubmachineGun:
 			SectionName = FName("Rifle");
 			break;
+		case EWeaponType::EWT_Shotgun:
+			SectionName = FName("Rifle");
+			break;
+		case EWeaponType::EWT_SniperRifle:
+			SectionName = FName("Rifle");
+			break;
 		}
 
 		AnimInstance->Montage_JumpToSection(SectionName);
@@ -519,24 +494,28 @@ void AStarfallCharacter::PlayElimMontage()
 	//}
 }
 
+
+
 void AStarfallCharacter::PlayHitReactMontage()
 {
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
 
-	/*UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && HitReactMontage)
 	{
 		AnimInstance->Montage_Play(HitReactMontage);
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
-	}*/
+	}
 }
+
+
 
 void AStarfallCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
-	/*PlayHitReactMontage();*/
+	PlayHitReactMontage();
 
 	
 	

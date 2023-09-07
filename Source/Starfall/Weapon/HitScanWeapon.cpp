@@ -11,9 +11,10 @@
 #include "Starfall/Environment/WindowColourChanger.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/Engine.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "Sound/SoundCue.h"
-
+#include "WeaponTypes.h"
 
 
 
@@ -30,126 +31,53 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 	{
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransform.GetLocation();
-		FVector End = Start + (HitTarget - Start) * 1.25f;
-		FVector WindowEnd = Start + (HitTarget - Start) * 1.25f;
+		
 
 		FHitResult FireHit;
 		FHitResult WindowHit;
-		UWorld* World = GetWorld();
-		if (World)
+
+		WeaponTraceHit(Start, HitTarget, FireHit, WindowHit);
+
+		AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(FireHit.GetActor());
+		if (StarfallCharacter && HasAuthority() && InstigatorController)
 		{
-			World->LineTraceSingleByChannel(
-				FireHit,
-				Start,
-				End,
-				ECollisionChannel::ECC_Visibility
+			//OnRep_ImpulseForce();
+			UGameplayStatics::ApplyDamage(
+				StarfallCharacter,
+				Damage,
+				InstigatorController,
+				this,
+				UDamageType::StaticClass()
 			);
-		}
-		FVector BeamEnd = End;
 
-		if (World)
-		{
-			World->LineTraceSingleByChannel(
-				WindowHit,
-				Start,
-				WindowEnd,
-				ECollisionChannel::ECC_GameTraceChannel3
-			);
 		}
 
-		//Check if it passes through a window or not
-		if (WindowHit.bBlockingHit)
-		{
-			AWindowColourChanger* WindowActor = Cast<AWindowColourChanger>(WindowHit.GetActor());
-			if (WindowActor)
-			{
-				WindowActor->ChangeWindowColour();
-			}
-		}
-
-		if (FireHit.bBlockingHit)
-		{
-			
-			BeamEnd = FireHit.ImpactPoint;
-			AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(FireHit.GetActor());
-			if (StarfallCharacter)
-			{
-				StarfallPlayerCharacter = StarfallCharacter;
-				WeaponImpactDirection = (End - Start).GetSafeNormal();
-
-				WeaponImpactPoint = FireHit.ImpactPoint;
-
-				WeaponImpactBone = FireHit.BoneName;
-
-				//OnRep_WeaponImpactImpulseForce();
-
-				StarfallCharacter->ImpactImpulseForce = WeaponImpactImpulseForce;
-				StarfallCharacter->ImpactDirection = WeaponImpactDirection;
-				StarfallCharacter->BoneImpactName = WeaponImpactBone;
-				StarfallCharacter->ImpactPoint = WeaponImpactPoint;
-			}
-			if (StarfallCharacter && HasAuthority() && InstigatorController)
-			{
-				//OnRep_ImpulseForce();
-				UGameplayStatics::ApplyDamage(
-					StarfallCharacter,
-					Damage,
-					InstigatorController,
-					this,
-					UDamageType::StaticClass()
-				);
-
-			}
-
-			AWeapon* StarfallWeapon = Cast<AWeapon>(FireHit.GetActor());
-			{
-				if (StarfallWeapon && HasAuthority())
-				{
-					FVector AWeaponImpactDirection = (End - Start).GetSafeNormal();
-					FVector ImpactPoint = FireHit.ImpactPoint;
-
-					StarfallWeapon->GetWeaponMesh()->AddImpulseAtLocation(AWeaponImpactDirection * WeaponImpactImpulseForce, FireHit.ImpactPoint, FireHit.BoneName);
-				}
-			}
+		
 
 
-			if (ImpactParticles)
-			{
-				//FTransform SpawnTransform = GetActorTransform();
-				UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-					GetWorld(),
-					ImpactParticles,
-					FireHit.ImpactPoint,
-					FireHit.ImpactNormal.Rotation()
-				);
-			}	
-			if (HitSound)
-			{
-				UGameplayStatics::PlaySoundAtLocation(
-					this,
-					HitSound,
-					FireHit.ImpactPoint
-					);
-			}
-		}
-		if (BeamParticles)
+		if (ImpactParticles)
 		{
 			//FTransform SpawnTransform = GetActorTransform();
-			UNiagaraComponent* Beam = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 				GetWorld(),
-				BeamParticles,
-				SocketTransform.GetLocation(),
-				SocketTransform.GetRotation().Rotator()
+				ImpactParticles,
+				FireHit.ImpactPoint,
+				FireHit.ImpactNormal.Rotation()
 			);
-			if (Beam)
-			{
-				Beam->SetVectorParameter(FName("BeamEnd"), BeamEnd);
-			}
 		}
+		if (HitSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				HitSound,
+				FireHit.ImpactPoint
+			);
+		}
+			
 		if (MuzzleFlash)
 		{
 			UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-				World,
+				GetWorld(),
 				MuzzleFlash,
 				SocketTransform.GetLocation(),
 				SocketTransform.GetRotation().Rotator()
@@ -166,6 +94,107 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 	}
 }
 
+void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit, FHitResult& WindowOutHit)
+{
+	
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		FVector End = bUseScatter ? TraceEndWithScatter(TraceStart, HitTarget) : TraceStart + (HitTarget - TraceStart) * 1.25f;
+		FVector WindowEnd = bUseScatter ? TraceEndWithScatter(TraceStart, HitTarget) : TraceStart + (HitTarget - TraceStart) * 1.25f;
 
+		World->LineTraceSingleByChannel(
+			OutHit,
+			TraceStart,
+			End,
+			ECollisionChannel::ECC_Visibility
+		);
+
+		if (World)
+		{
+			World->LineTraceSingleByChannel(
+				WindowOutHit,
+				TraceStart,
+				WindowEnd,
+				ECollisionChannel::ECC_GameTraceChannel3
+			);
+		}
+
+		FVector BeamEnd = End;
+
+		if (OutHit.bBlockingHit)
+		{
+			BeamEnd = OutHit.ImpactPoint;
+			AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(OutHit.GetActor());
+			if (StarfallCharacter)
+			{
+				StarfallPlayerCharacter = StarfallCharacter;
+				WeaponImpactDirection = (End - TraceStart).GetSafeNormal();
+
+				WeaponImpactPoint = OutHit.ImpactPoint;
+
+				WeaponImpactBone = OutHit.BoneName;
+
+				//OnRep_WeaponImpactImpulseForce();
+
+				StarfallCharacter->ImpactImpulseForce = WeaponImpactImpulseForce;
+				StarfallCharacter->ImpactDirection = WeaponImpactDirection;
+				StarfallCharacter->BoneImpactName = WeaponImpactBone;
+				StarfallCharacter->ImpactPoint = WeaponImpactPoint;
+			}
+		}
+
+		AWeapon* StarfallWeapon = Cast<AWeapon>(OutHit.GetActor());
+		{
+			if (StarfallWeapon && HasAuthority())
+			{
+				FVector AWeaponImpactDirection = (End - TraceStart).GetSafeNormal();
+				FVector ImpactPoint = OutHit.ImpactPoint;
+
+				StarfallWeapon->GetWeaponMesh()->AddImpulseAtLocation(AWeaponImpactDirection * WeaponImpactImpulseForce, OutHit.ImpactPoint, OutHit.BoneName);
+			}
+		}
+
+		//Check if it passes through a window or not
+		if (WindowOutHit.bBlockingHit)
+		{
+			AWindowColourChanger* WindowActor = Cast<AWindowColourChanger>(WindowOutHit.GetActor());
+			if (WindowActor)
+			{
+				WindowActor->ChangeWindowColour();
+			}
+		}
+
+		if (BeamParticles)
+		{
+			//FTransform SpawnTransform = GetActorTransform();
+			UNiagaraComponent* Beam = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				GetWorld(),
+				BeamParticles,
+				TraceStart,
+				FRotator::ZeroRotator
+			);
+			if (Beam)
+			{
+				Beam->SetVectorParameter(FName("BeamEnd"), BeamEnd);
+			}
+		}
+	}
+}
+
+FVector AHitScanWeapon::TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget)
+{
+	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
+	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
+	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
+	FVector EndLoc = SphereCenter + RandVec;
+	FVector ToEndLoc = EndLoc - TraceStart;
+
+	/*DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
+	DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);
+	DrawDebugLine(GetWorld(), TraceStart, FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size()), FColor::Cyan, true);*/
+
+	return FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());
+}
 
 

@@ -241,6 +241,10 @@ private:
 	float TimeSinceLastMovementReplication;
 	float CalculateSpeed();
 
+	FTimerHandle HitReactHandle;
+
+	void HitReactEnd();
+
 	/*
 	*Player Health
 	*/

@@ -9,7 +9,7 @@
 #include "Starfall/StarfallTypes/CombatState.h"
 #include "CombatComponent.generated.h"
 
-#define TRACE_LENGTH 80000.f
+
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -123,6 +123,8 @@ private:
 	FTimerHandle FireTimer;
 
 	FTimerHandle ReloadTimer;
+
+	
 	
 	UPROPERTY()
 	float ReloadDelay;
@@ -160,6 +162,12 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	int32 StartingSubmachineGunAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingShotgunAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingSniperAmmo = 0;
 
 	void InitializeCarriedAmmo();
 
