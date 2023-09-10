@@ -84,6 +84,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float ReloadDelay;
 
+	/*
+	*  Enable or disable custom depth
+	*/
+
+	void EnableCustomDepth(bool bEnable);
+
 protected:
 	
 	virtual void BeginPlay() override;
