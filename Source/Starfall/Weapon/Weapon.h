@@ -90,6 +90,9 @@ public:
 
 	void EnableCustomDepth(bool bEnable);
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class USoundBase* EquipSound;
+
 protected:
 	
 	virtual void BeginPlay() override;

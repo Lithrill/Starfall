@@ -70,7 +70,7 @@ void UStarfallCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		
 	}
 
-	bUseFABRIK = StarfallCharacter->GetCombatState() != ECombatState::ECS_Reloading;
-	bUseAimOffsets = StarfallCharacter->GetCombatState() != ECombatState::ECS_Reloading && !StarfallCharacter->GetDisabledGameplay();
-	bTransformRightHand = StarfallCharacter->GetCombatState() != ECombatState::ECS_Reloading && !StarfallCharacter->GetDisabledGameplay();
+	bUseFABRIK = StarfallCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;
+	bUseAimOffsets = StarfallCharacter->GetCombatState() != ECombatState::ECS_Unoccupied && !StarfallCharacter->GetDisabledGameplay();
+	bTransformRightHand = StarfallCharacter->GetCombatState() != ECombatState::ECS_Unoccupied && !StarfallCharacter->GetDisabledGameplay();
 }

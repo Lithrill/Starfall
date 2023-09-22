@@ -123,8 +123,14 @@ void AStarfallCharacter::BeginPlay()
 	{
 		SetUpPlayerInput();
 	}
+	if (HasAuthority())
+	{
+		SetUpPlayerInput();
+	}
+	
 	
 }
+
 
 void AStarfallCharacter::PossessedBy(AController* NewController)
 {
@@ -343,6 +349,7 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Jump);
+		EnhancedInputComponent->BindAction(QuickJumpAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::QuickJump);
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Equip);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::Crouch);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AStarfallCharacter::Aim);
@@ -352,6 +359,8 @@ void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::ScorePressed);
 		EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Completed, this, &AStarfallCharacter::ScoreReleased);
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AStarfallCharacter::ReloadPressed);
+		EnhancedInputComponent->BindAction(GrenadeAction, ETriggerEvent::Triggered, this, &AStarfallCharacter::GrenadePressed);
+		
 	}
 }
 
@@ -501,6 +510,15 @@ void AStarfallCharacter::PlayElimMontage()
 	//}
 }
 
+void AStarfallCharacter::PlayThrowGrenadeMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ThrowGrenadeMontage)
+	{
+		AnimInstance->Montage_Play(ThrowGrenadeMontage);
+	}
+}
+
 
 
 void AStarfallCharacter::PlayHitReactMontage()
@@ -581,9 +599,27 @@ void AStarfallCharacter::Jump()
 	}
 	else
 	{
+		GetCharacterMovement()->JumpZVelocity = 1900.f;
 		Super::Jump();
 	}
 	
+}
+
+
+void AStarfallCharacter::QuickJump()
+{
+	if (bDisableGameplay) return;
+	PlayerActions = QuickJumpAction;
+	ClientCheckCurrentInputMode();
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		GetCharacterMovement()->JumpZVelocity = 1100.f;
+		Super::Jump();
+	}
 }
 
 void AStarfallCharacter::Equip()
@@ -708,6 +744,16 @@ void AStarfallCharacter::ReloadPressed()
 	}
 	
 }
+
+void AStarfallCharacter::GrenadePressed()
+{
+	if (Combat)
+	{
+		Combat->ThrowGrenade();
+	}
+}
+
+
 
 void AStarfallCharacter::FireReleased()
 {
