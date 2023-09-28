@@ -49,18 +49,35 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				this,
 				UDamageType::StaticClass()
 			);
-
+			
 		}
-
+		if (StarfallCharacter)
+		{
+			PlayerHit = true;
+		}
+		else
+		{
+			PlayerHit = false;
+		}
 		
 
 
-		if (ImpactParticles)
+		if (ImpactParticles && !PlayerHit)
 		{
 			//FTransform SpawnTransform = GetActorTransform();
 			UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 				GetWorld(),
 				ImpactParticles,
+				FireHit.ImpactPoint,
+				FireHit.ImpactNormal.Rotation()
+			);
+		}
+		else if (ImpactParticles && PlayerHit)
+		{
+			//FTransform SpawnTransform = GetActorTransform();
+			UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				GetWorld(),
+				ImpactParticlesPlayer,
 				FireHit.ImpactPoint,
 				FireHit.ImpactNormal.Rotation()
 			);

@@ -81,20 +81,9 @@ AStarfallCharacter::AStarfallCharacter()
 	MinimapCaptureComponent2D = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("MiniMapCameraComponent"));
 	MinimapCaptureComponent2D->SetupAttachment(MinimapCameraBoom, USpringArmComponent::SocketName);
 
-	 /*PlayerSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("SpriteComponent"));
-	 PlayerSpriteComponent->SetupAttachment(GetMesh());*/
-
-	 /*PlayerSprite = CreateDefaultSubobject<UPaperSprite>(TEXT("PlayerSprite"));
-	 PlayerSprite->Attach*/
-
-	//MinimapRenderTarget = CreateDefaultSubobject<UTextureRenderTarget2D>(TEXT("PlayerMinimapRenderTarget"));
-	//
-	//
-	
-	
-	//
-	
-	
+	AttachedGrenade = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Attached Grenade"));
+	AttachedGrenade->SetupAttachment(GetMesh(), FName("GrenadeSocket"));
+	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AStarfallCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -127,7 +116,10 @@ void AStarfallCharacter::BeginPlay()
 	{
 		SetUpPlayerInput();
 	}
-	
+	if (AttachedGrenade)
+	{
+		AttachedGrenade->SetVisibility(false);
+	}
 	
 }
 

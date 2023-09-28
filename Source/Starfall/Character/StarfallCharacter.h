@@ -324,6 +324,13 @@ private:
 
 	virtual void PossessedBy(AController* NewController) override;
 	
+	/*
+	* Grenade
+	*/
+
+	UPROPERTY(VisibleAnywhere)
+	class UStaticMeshComponent* AttachedGrenade;
+
 public:	
 	
 	void SetOverlappingWeapon(AWeapon* Weapon);
@@ -342,4 +349,5 @@ public:
 	ECombatState GetCombatState() const;
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 	FORCEINLINE bool GetDisabledGameplay() const { return bDisableGameplay; }
+	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 };

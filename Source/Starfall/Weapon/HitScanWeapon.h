@@ -27,11 +27,15 @@ protected:
 	class UNiagaraSystem* ImpactParticles;
 
 	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* ImpactParticlesPlayer;
+
+	UPROPERTY(EditAnywhere)
 	class USoundCue* HitSound;
 
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
 
+	bool PlayerHit = false;
 private:
 
 	UPROPERTY(EditAnywhere)

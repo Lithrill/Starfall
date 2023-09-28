@@ -43,11 +43,11 @@ void AProjectileRocket::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*if (!HasAuthority())
+	if (!HasAuthority())
 	{
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileRocket::OnHit);
 		
-	}*/
+	}
 
 	SpawnTrailSystem();
 
@@ -119,6 +119,7 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	{
 		ProjectileLoopComponent->Stop();
 	}
+	
 }
 
 void AProjectileRocket::Destroyed()

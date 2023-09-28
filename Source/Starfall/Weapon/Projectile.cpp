@@ -56,6 +56,16 @@ void AProjectile::BeginPlay()
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	AStarfallCharacter* StarfallCharacter = Cast<AStarfallCharacter>(OtherActor);
+	if (StarfallCharacter)
+	{
+		PlayerHit = true;
+	}
+	else
+	{
+		PlayerHit = false;
+	}
+
 	Destroy();
 }
 
@@ -394,13 +404,22 @@ void AProjectile::DestroyTimerFinished()
 
 void AProjectile::Destroyed()
 {
-
-	if (ImpactParticles)
+	if (ImpactParticles && !PlayerHit)
 	{
 		FTransform SpawnTransform = GetActorTransform();
 		UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 			GetWorld(),
 			ImpactParticles,
+			SpawnTransform.GetLocation(),
+			SpawnTransform.GetRotation().Rotator()
+		);
+	}
+	else if (ImpactParticlesPlayer && PlayerHit)
+	{
+		FTransform SpawnTransform = GetActorTransform();
+		UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			ImpactParticlesPlayer,
 			SpawnTransform.GetLocation(),
 			SpawnTransform.GetRotation().Rotator()
 		);

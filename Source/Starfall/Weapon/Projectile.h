@@ -34,6 +34,9 @@ protected:
 	class UNiagaraSystem* ImpactParticles;
 
 	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* ImpactParticlesPlayer;
+
+	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
 
 	UPROPERTY(EditAnywhere)
@@ -68,6 +71,8 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float MaxLaunchSpeed = 7000.f;
+
+	bool PlayerHit = false;
 
 private:
 

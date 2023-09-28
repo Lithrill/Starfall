@@ -19,8 +19,7 @@ public:
 	virtual void Destroyed() override;
 
 
-	/*UPROPERTY(EditAnywhere, Category = Impulse)
-	TSubclassOf<class ARocketRadialForce> RadialForceObject;*/
+	
 
 	
 protected:
