@@ -31,6 +31,9 @@ protected:
 		const FHitResult& SweepResult
 	);
 
+	UPROPERTY(EditAnywhere)
+	float BaseTurnRate = 45.f;
+
 private:
 
 	UPROPERTY(EditAnywhere)
@@ -40,7 +43,7 @@ private:
 	class USoundCue* PickupSound;
 
 	UPROPERTY(EditAnywhere)
-		class UStaticMeshComponent* PickupMesh;
+	class UStaticMeshComponent* PickupMesh;
 
 public:	
 	
