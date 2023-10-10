@@ -93,6 +93,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class USoundBase* EquipSound;
 
+	bool bDestroyWeapon = false;
 protected:
 	
 	virtual void BeginPlay() override;

@@ -190,6 +190,11 @@ void AStarfallPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 		StarfallHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
 
 	}
+	else
+	{
+		bInitializeCarriedAmmo = true;
+		HUDWeaponAmmo = Ammo;
+	}
 }
 
 void AStarfallPlayerController::SetHUDCarriedAmmo(int32 Ammo)
@@ -203,6 +208,11 @@ void AStarfallPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
 		StarfallHUD->CharacterOverlay->CarriedAmmoAmount->SetText(FText::FromString(AmmoText));
 
+	}
+	else
+	{
+		bInitializeCarriedAmmo = true;
+		HUDCarriedAmmo = Ammo;
 	}
 }
 
@@ -297,6 +307,9 @@ void AStarfallPlayerController::PollInit()
 			if (CharacterOverlay)
 			{
 				SetHUDHealth(HUDHealth, HUDMaxHealth);
+
+				if (bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
+				if (bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
 			}
 		}
 		
@@ -315,15 +328,8 @@ void AStarfallPlayerController::PollInit()
 	}
 
 	
-	//AStarfallPlayerController* StarfallPlayerController = IsValid(this) ? Cast<AStarfallPlayerController>(this) : nullptr;
-	//if (StarfallPlayerController)
-	//{
-	//	AStarfallCharacter* MyStarfallControlledCharacter = Cast<AStarfallCharacter>(StarfallPlayerController->GetPawn());
-	//	if (MyStarfallControlledCharacter)
-	//	{
-	//		MyStarfallControlledCharacter->SetUpPlayerInput();
-	//	}
-	//}
+	
+	
 	
 }
 
@@ -409,7 +415,7 @@ void AStarfallPlayerController::HandleMatchHasStarted()
 				StarfallHUD->CharacterOverlay->CHDynamicMinimapIconMaterialInstance = DynamicMinimapMaterialInstance;
 				StarfallHUD->CharacterOverlay->MinimapTarget = MinimapRender;
 				StarfallHUD->CharacterOverlay->UpdateCharacterMinimapMaterial();
-				UE_LOG(LogTemp, Error, TEXT("CalledCharacter Overlay"))
+			
 			}
 			
 		}
@@ -431,7 +437,7 @@ void AStarfallPlayerController::UpdateMinimapMat()
 				StarfallHUD->CharacterOverlay->CHDynamicMinimapIconMaterialInstance = DynamicMinimapMaterialInstance;
 				StarfallHUD->CharacterOverlay->MinimapTarget = MinimapRender;
 				StarfallHUD->CharacterOverlay->UpdateCharacterMinimapMaterial();
-				UE_LOG(LogTemp, Error, TEXT("CalledCharacter Overlay"))
+				
 			}
 
 		}
@@ -497,5 +503,6 @@ void AStarfallPlayerController::HandleCooldown()
 	{
 		StarfallCharacter->bDisableGameplay = true;
 		StarfallCharacter->GetCombat()->FireButtonPressed(false);
+		StarfallCharacter->Destroy();
 	}
 }

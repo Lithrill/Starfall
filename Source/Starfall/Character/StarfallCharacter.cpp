@@ -21,7 +21,7 @@
 #include "Starfall/GameMode/StarfallGameMode.h"
 #include "Math/RandomStream.h"
 #include "TimerManager.h"
-
+#include "Starfall/StarfallComponents/BuffComponent.h"
 #include "Engine/World.h"
 #include "Starfall/HUD/ScoreHUD.h"
 #include "Starfall/HUD/StarfallHUD.h"
@@ -60,6 +60,9 @@ AStarfallCharacter::AStarfallCharacter()
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
 
+	Buff = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
+	Buff->SetIsReplicated(true);
+
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
@@ -95,13 +98,17 @@ void AStarfallCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(AStarfallCharacter, bDisableGameplay);
 }
 
+
+
 // Called when the game starts or when spawned
 void AStarfallCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	
 	UpdateHUDHealth();
-
+	SpawnDefaultWeapon();
+	UpdateHUDAmmo();
 	
 	if (HasAuthority())
 	{
@@ -152,7 +159,15 @@ void AStarfallCharacter::Elim()
 {
 	if (Combat && Combat->EquippedWeapon)
 	{
-		Combat->EquippedWeapon->Dropped();
+		if (Combat->EquippedWeapon->bDestroyWeapon)
+		{
+			Combat->EquippedWeapon->Destroy();
+		}
+		else
+		{
+			Combat->EquippedWeapon->Dropped();
+		}
+		
 	}
 	MulticastElim();
 	GetWorldTimerManager().SetTimer(
@@ -331,6 +346,16 @@ void AStarfallCharacter::RotateInPlace(float DeltaTime)
 	}
 }
 
+void AStarfallCharacter::UpdateHUDAmmo()
+{
+	StarfallPlayerController = StarfallPlayerController == nullptr ? Cast<AStarfallPlayerController>(Controller) : StarfallPlayerController;
+	if (StarfallPlayerController && Combat && Combat->EquippedWeapon)
+	{
+		StarfallPlayerController->SetHUDCarriedAmmo(Combat->CarriedAmmo);
+		StarfallPlayerController->SetHUDWeaponAmmo(Combat->EquippedWeapon->GetAmmo());
+	}
+}
+
 // Called to bind functionality to input
 void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -404,6 +429,10 @@ void AStarfallCharacter::PostInitializeComponents()
 	if (Combat)
 	{
 		Combat->Character = this;
+	}
+	if (Buff)
+	{
+		Buff->Character = this;
 	}
 }
 
@@ -589,13 +618,16 @@ void AStarfallCharacter::Jump()
 	{
 		UnCrouch();
 	}
-	else
+	else 
 	{
 		GetCharacterMovement()->JumpZVelocity = 1900.f;
 		Super::Jump();
 	}
 	
+	
 }
+
+
 
 
 void AStarfallCharacter::QuickJump()
@@ -607,11 +639,21 @@ void AStarfallCharacter::QuickJump()
 	{
 		UnCrouch();
 	}
-	else
+	else if (HasAuthority())
 	{
 		GetCharacterMovement()->JumpZVelocity = 1100.f;
 		Super::Jump();
 	}
+	else
+	{
+		ServerQuickJumpPressed();
+	}
+}
+
+void AStarfallCharacter::ServerQuickJumpPressed_Implementation()
+{
+	GetCharacterMovement()->JumpZVelocity = 1100.f;
+	Super::Jump();
 }
 
 void AStarfallCharacter::Equip()
@@ -892,10 +934,14 @@ void AStarfallCharacter::HideCameraIfCharacterClose()
 	}
 }
 
-void AStarfallCharacter::OnRep_Health()
+void AStarfallCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
-	PlayHitReactMontage();
+	if (Health < LastHealth)
+	{
+		PlayHitReactMontage();
+	}
+	
 }
 
 void AStarfallCharacter::UpdateHUDHealth()
@@ -1062,6 +1108,19 @@ ECombatState AStarfallCharacter::GetCombatState() const
 	return Combat->CombatState;
 }
 
-
+void AStarfallCharacter::SpawnDefaultWeapon()
+{
+	AStarfallGameMode* StarfallGameMode = Cast<AStarfallGameMode>(UGameplayStatics::GetGameMode(this));
+	UWorld* World = GetWorld();
+	if (StarfallGameMode && World && !bElimmed && DefaultWeaponClass)
+	{
+		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(DefaultWeaponClass);
+		StartingWeapon->bDestroyWeapon = true;
+		if (Combat)
+		{
+			Combat->EquipWeapon(StartingWeapon);
+		}
+	}
+}
 
 

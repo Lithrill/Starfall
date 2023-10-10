@@ -108,4 +108,13 @@ private:
 	int32 HUDDefeats;
 
 	
+	UPROPERTY()
+	float HUDCarriedAmmo;
+
+	bool bInitializeCarriedAmmo = false;
+
+	UPROPERTY()
+	float HUDWeaponAmmo;
+
+	bool bInitializeWeaponAmmo = false;
 };
