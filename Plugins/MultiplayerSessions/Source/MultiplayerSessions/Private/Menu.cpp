@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+
 #include "Menu.h"
 #include "Components/Button.h"
 #include "MultiplayerSessionsSubsystem.h"
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
-#include "Interfaces/OnlineSessionInterface.h"
 
 void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
@@ -20,7 +20,6 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 	if (World)
 	{
 		APlayerController* PlayerController = World->GetFirstPlayerController();
-
 		if (PlayerController)
 		{
 			FInputModeUIOnly InputModeData;
@@ -56,21 +55,19 @@ bool UMenu::Initialize()
 
 	if (HostButton)
 	{
-		HostButton->OnClicked.AddDynamic(this, &UMenu::HostButtonClicked);
+		HostButton->OnClicked.AddDynamic(this, &ThisClass::HostButtonClicked);
 	}
-
 	if (JoinButton)
 	{
-		JoinButton->OnClicked.AddDynamic(this, &UMenu::JoinButtonClicked);
+		JoinButton->OnClicked.AddDynamic(this, &ThisClass::JoinButtonClicked);
 	}
-	
+
 	return true;
 }
 
 void UMenu::NativeDestruct()
 {
 	MenuTearDown();
-	
 	Super::NativeDestruct();
 }
 
@@ -105,7 +102,7 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 	{
 		return;
 	}
-	
+
 	for (auto Result : SessionResults)
 	{
 		FString SettingsValue;
@@ -116,7 +113,6 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 			return;
 		}
 	}
-
 	if (!bWasSuccessful || SessionResults.Num() == 0)
 	{
 		JoinButton->SetIsEnabled(true);
@@ -125,13 +121,11 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 
 void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 {
-	
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
 	if (Subsystem)
 	{
 		IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
-
-		if(SessionInterface.IsValid())
+		if (SessionInterface.IsValid())
 		{
 			FString Address;
 			SessionInterface->GetResolvedConnectString(NAME_GameSession, Address);
@@ -142,11 +136,6 @@ void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 				PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 			}
 		}
-	}
-
-	if (Result != EOnJoinSessionCompleteResult::Success)
-	{
-		JoinButton->SetIsEnabled(true);
 	}
 }
 
@@ -180,11 +169,9 @@ void UMenu::MenuTearDown()
 {
 	RemoveFromParent();
 	UWorld* World = GetWorld();
-
 	if (World)
 	{
 		APlayerController* PlayerController = World->GetFirstPlayerController();
-
 		if (PlayerController)
 		{
 			FInputModeGameOnly InputModeData;
