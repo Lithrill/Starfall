@@ -24,4 +24,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	bool isExplosive = false;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* FireSound;
 };

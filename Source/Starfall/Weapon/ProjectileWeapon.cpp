@@ -4,6 +4,8 @@
 #include "ProjectileWeapon.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Projectile.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 void AProjectileWeapon::Fire(const FVector& HitTarget)
 {
@@ -41,6 +43,15 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 	if (!HasAuthority()) return;
 
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
+	
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			FireSound,
+			GetActorLocation()
+		);
+	}
 	
 	if (MuzzleFlashSocket)
 	{
