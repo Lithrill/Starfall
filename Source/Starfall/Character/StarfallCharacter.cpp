@@ -815,7 +815,7 @@ void AStarfallCharacter::AimOffset(float DeltaTime)
 	if (Speed == 0.f && !bIsInAir) //Standing still, not jumping
 	{
 		bRotateRootBone = true;
-		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator CurrentAimRotation = FRotator(GetBaseAimRotation().Yaw, 0.f, 0.f);
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
 		if (TurningInPlace == ETurningInPlace::ETIP_NotTurning)
@@ -829,7 +829,7 @@ void AStarfallCharacter::AimOffset(float DeltaTime)
 	if (Speed > 0.f || bIsInAir) // running, or jumping
 	{
 		bRotateRootBone = false;
-		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		StartingAimRotation = FRotator(GetBaseAimRotation().Yaw, 0.f, 0.f);
 		AO_Yaw = 0.f;
 		bUseControllerRotationYaw = true;
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
@@ -901,7 +901,7 @@ void AStarfallCharacter::TurnInPlace(float DeltaTime)
 		if(FMath::Abs(AO_Yaw) < 15.f)
 		{
 			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
-			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+			StartingAimRotation = FRotator(GetBaseAimRotation().Yaw, 0.f, 0.f);
 		}
 	}
 }
