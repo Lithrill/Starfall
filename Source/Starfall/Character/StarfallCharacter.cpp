@@ -359,6 +359,7 @@ void AStarfallCharacter::UpdateHUDAmmo()
 // Called to bind functionality to input
 void AStarfallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	SetUpPlayerInput();
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
