@@ -35,6 +35,7 @@
 #include "PaperSpriteComponent.h"
 #include "PaperSprite.h"
 #include "Engine/CanvasRenderTarget2D.h"
+#include "Starfall/HUD/CharacterOverlay.h"
 
 // Sets default values
 AStarfallCharacter::AStarfallCharacter()
@@ -109,6 +110,7 @@ void AStarfallCharacter::BeginPlay()
 	UpdateHUDHealth();
 	SpawnDefaultWeapon();
 	UpdateHUDAmmo();
+	UpdateMinimapMat();
 	
 	if (HasAuthority())
 	{
@@ -127,7 +129,26 @@ void AStarfallCharacter::BeginPlay()
 	{
 		AttachedGrenade->SetVisibility(false);
 	}
-	
+	if(StarfallHUDRef == nullptr || StarfallHUDRef->CharacterOverlay == nullptr)
+	{
+		APlayerController* MyPlayerController = GetController<APlayerController>();
+		if (MyPlayerController)
+		{
+			StarfallHUDRef = StarfallHUDRef == nullptr ? Cast<AStarfallHUD>(MyPlayerController->GetHUD()) : StarfallHUDRef;
+		}
+	}
+	if (StarfallHUDRef && StarfallHUDRef->CharacterOverlay)
+	{
+		
+		if (DynamicMinimapMaterialInstance != nullptr)
+		{
+			StarfallHUDRef->CharacterOverlay->CHDynamicMinimapIconMaterialInstance = DynamicMinimapMaterialInstance;
+			StarfallHUDRef->CharacterOverlay->MinimapTarget = MinimapRender;
+			StarfallHUDRef->CharacterOverlay->UpdateCharacterMinimapMaterial();
+			
+		}
+			
+	}
 }
 
 
@@ -226,9 +247,9 @@ void AStarfallCharacter::SetUpPlayerInput()
 				UE_LOG(LogTemp, Warning, TEXT("DynamicMinimapIconMaterialInstance: %s"), DynamicMinimapIconMaterialInstance ? TEXT("Valid") : TEXT("Invalid"));
 
 				DynamicMinimapIconMaterialInstance->SetTextureParameterValue("MyTextureParam", MinimapRenderTarget);
-				StarfallPlayerController->DynamicMinimapMaterialInstance = DynamicMinimapIconMaterialInstance;
+				//StarfallPlayerController->DynamicMinimapMaterialInstance = DynamicMinimapIconMaterialInstance;
 
-				StarfallPlayerController->UpdateMinimapMat();
+				
 			}
 		}
 	}
@@ -240,6 +261,38 @@ void AStarfallCharacter::SetUpPlayerInput()
 	
 	
 
+}
+
+void AStarfallCharacter::UpdateMinimapMat()
+{
+	if(StarfallHUDRef == nullptr || StarfallHUDRef->CharacterOverlay == nullptr)
+	{
+		APlayerController* MyPlayerController = GetController<APlayerController>();
+		if (MyPlayerController)
+		{
+			StarfallHUDRef = StarfallHUDRef == nullptr ? Cast<AStarfallHUD>(MyPlayerController->GetHUD()) : StarfallHUDRef;
+		}
+	}
+	if (StarfallHUDRef)
+	{
+		if (StarfallHUDRef->CharacterOverlay == nullptr)
+		{
+			StarfallHUDRef->AddCharacterOverlay();
+		}
+
+		if (StarfallHUDRef->CharacterOverlay)
+		{
+
+			if (DynamicMinimapIconMaterialInstance != nullptr)
+			{
+				StarfallHUDRef->CharacterOverlay->CHDynamicMinimapIconMaterialInstance = DynamicMinimapIconMaterialInstance;
+				StarfallHUDRef->CharacterOverlay->MinimapTarget = MinimapRender;
+				StarfallHUDRef->CharacterOverlay->UpdateCharacterMinimapMaterial();
+				
+			}
+
+		}
+	}
 }
 
 void AStarfallCharacter::MulticastElim_Implementation()

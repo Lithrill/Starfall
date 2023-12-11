@@ -52,10 +52,20 @@ public:
 	EControllerInputState PlayerInputState;
 
 	UPROPERTY()
-	class AStarfallHUD* StarfallHUD;
+	class AStarfallHUD* StarfallHUDRef;
 
 	bool WasScorePressed = false;
 
+	void UpdateMinimapMat();
+
+	
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMinimapMaterialInstance;
+
+	UPROPERTY(VisibleAnywhere)
+	class UCanvasRenderTarget2D* MinimapRender;
+	
 	UPROPERTY(Replicated)
 	bool bDisableGameplay = false;
 

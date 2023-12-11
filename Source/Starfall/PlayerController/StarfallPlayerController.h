@@ -35,13 +35,9 @@ public:
 	void HandleCooldown();
 
 	
-	UPROPERTY()
-	UMaterialInstanceDynamic* DynamicMinimapMaterialInstance;
+	
 
-	UPROPERTY(VisibleAnywhere)
-	class UCanvasRenderTarget2D* MinimapRender;
 
-	void UpdateMinimapMat();
 
 protected:
 	virtual void BeginPlay() override;

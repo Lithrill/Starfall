@@ -407,42 +407,11 @@ void AStarfallPlayerController::HandleMatchHasStarted()
 			StarfallHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
 		}
 
-		if (StarfallHUD->CharacterOverlay)
-		{
-			
-			if (DynamicMinimapMaterialInstance != nullptr)
-			{
-				StarfallHUD->CharacterOverlay->CHDynamicMinimapIconMaterialInstance = DynamicMinimapMaterialInstance;
-				StarfallHUD->CharacterOverlay->MinimapTarget = MinimapRender;
-				StarfallHUD->CharacterOverlay->UpdateCharacterMinimapMaterial();
-			
-			}
-			
-		}
+		
 	}
 }
 
-void AStarfallPlayerController::UpdateMinimapMat()
-{
-	StarfallHUD = StarfallHUD == nullptr ? Cast<AStarfallHUD>(GetHUD()) : StarfallHUD;
-	if (StarfallHUD)
-	{
-		if (StarfallHUD->CharacterOverlay == nullptr) StarfallHUD->AddCharacterOverlay();
 
-		if (StarfallHUD->CharacterOverlay)
-		{
-
-			if (DynamicMinimapMaterialInstance != nullptr)
-			{
-				StarfallHUD->CharacterOverlay->CHDynamicMinimapIconMaterialInstance = DynamicMinimapMaterialInstance;
-				StarfallHUD->CharacterOverlay->MinimapTarget = MinimapRender;
-				StarfallHUD->CharacterOverlay->UpdateCharacterMinimapMaterial();
-				
-			}
-
-		}
-	}
-}
 
 void AStarfallPlayerController::HandleCooldown()
 {
